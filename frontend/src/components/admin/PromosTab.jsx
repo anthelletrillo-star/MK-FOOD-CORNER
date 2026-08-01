@@ -105,8 +105,9 @@ export default function PromosTab() {
       </div>
 
       <div className="bg-slate-900 border border-white/5 rounded-3xl overflow-hidden shadow-2xl">
-        <table className="w-full text-left text-sm whitespace-nowrap">
-          <thead>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm whitespace-nowrap">
+            <thead>
             <tr className="bg-slate-800/50 border-b border-white/5 text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none">
               <th className="p-5">Code</th>
               <th className="p-5">Value</th>
@@ -152,22 +153,23 @@ export default function PromosTab() {
               </tr>
             )}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-white/10 w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl animate-scale-in" onClick={e => e.stopPropagation()}>
-            <div className="p-8">
-              <h3 className="text-xl font-black text-white tracking-tight mb-6 flex items-center gap-2"><Tag className="w-5 h-5 text-indigo-400" /> Create Promo Code</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto hidden-scrollbar">
+          <div className="bg-white border border-slate-200 w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl animate-scale-in my-auto mx-4" onClick={e => e.stopPropagation()}>
+            <div className="p-6 sm:p-8">
+              <h3 className="text-xl font-black text-slate-800 tracking-tight mb-6 flex items-center gap-2"><Tag className="w-5 h-5 text-indigo-500" /> Promo</h3>
               
               <form onSubmit={handleSave} className="space-y-4">
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Promo Code</label>
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Promo Code</label>
                     <input 
                       type="text" required
-                      className="w-full bg-slate-800 border border-white/5 rounded-2xl px-5 py-3.5 text-sm text-white focus:border-indigo-500 outline-none uppercase font-bold"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm text-slate-900 focus:border-indigo-500 outline-none uppercase font-bold"
                       placeholder="e.g. SUMMER20"
                       value={formData.code}
                       onChange={e => setFormData({...formData, code: e.target.value.toUpperCase()})}
@@ -177,9 +179,9 @@ export default function PromosTab() {
 
                 <div className="flex gap-4">
                   <div className="w-1/2">
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Discount Type</label>
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Discount Type</label>
                     <select
-                      className="w-full bg-slate-800 border border-white/5 rounded-2xl px-4 py-3.5 text-sm text-white focus:border-indigo-500 outline-none font-bold"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm text-slate-900 focus:border-indigo-500 outline-none font-bold"
                       value={formData.type}
                       onChange={e => setFormData({...formData, type: e.target.value})}
                     >
@@ -188,10 +190,10 @@ export default function PromosTab() {
                     </select>
                   </div>
                   <div className="w-1/2">
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Value</label>
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Value</label>
                     <input 
                       type="number" required min="1" step="any"
-                      className="w-full bg-slate-800 border border-white/5 rounded-2xl px-5 py-3.5 text-sm text-white focus:border-indigo-500 outline-none font-bold"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm text-slate-900 focus:border-indigo-500 outline-none font-bold"
                       placeholder={formData.type === 'PERCENTAGE' ? "e.g. 20" : "e.g. 150"}
                       value={formData.value}
                       onChange={e => setFormData({...formData, value: e.target.value})}
@@ -200,9 +202,9 @@ export default function PromosTab() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Applies To</label>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Applies To</label>
                   <select
-                    className="w-full bg-slate-800 border border-white/5 rounded-2xl px-4 py-3.5 text-sm text-white focus:border-indigo-500 outline-none font-bold mb-2"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm text-slate-900 focus:border-indigo-500 outline-none font-bold mb-2"
                     value={formData.appliesTo}
                     onChange={e => setFormData({...formData, appliesTo: e.target.value, targetId: ''})}
                   >
@@ -213,7 +215,7 @@ export default function PromosTab() {
 
                   {formData.appliesTo === 'PRODUCT' && (
                     <select required
-                      className="w-full bg-slate-800 border border-white/5 rounded-2xl px-4 py-3.5 text-sm text-white focus:border-indigo-500 outline-none"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm text-slate-900 focus:border-indigo-500 outline-none"
                       value={formData.targetId}
                       onChange={e => setFormData({...formData, targetId: e.target.value})}
                     >
@@ -223,7 +225,7 @@ export default function PromosTab() {
                   )}
                   {formData.appliesTo === 'CATEGORY' && (
                     <select required
-                      className="w-full bg-slate-800 border border-white/5 rounded-2xl px-4 py-3.5 text-sm text-white focus:border-indigo-500 outline-none"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm text-slate-900 focus:border-indigo-500 outline-none"
                       value={formData.targetId}
                       onChange={e => setFormData({...formData, targetId: e.target.value})}
                     >
@@ -234,10 +236,10 @@ export default function PromosTab() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Max Uses (Optional)</label>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Max Uses (Optional)</label>
                   <input 
                     type="number" min="1"
-                    className="w-full bg-slate-800 border border-white/5 rounded-2xl px-5 py-3.5 text-sm text-white focus:border-indigo-500 outline-none"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm text-slate-900 focus:border-indigo-500 outline-none"
                     placeholder="Leave blank for unlimited"
                     value={formData.maxUses}
                     onChange={e => setFormData({...formData, maxUses: e.target.value})}
@@ -246,19 +248,19 @@ export default function PromosTab() {
 
                 <div className="flex gap-4">
                   <div className="w-1/2">
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Start Date</label>
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Start Date</label>
                     <input 
                       type="date" 
-                      className="w-full bg-slate-800 border border-white/5 rounded-2xl px-4 py-3.5 text-sm text-white focus:border-indigo-500 outline-none [&::-webkit-calendar-picker-indicator]:invert"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm text-slate-900 focus:border-indigo-500 outline-none"
                       value={formData.startDate}
                       onChange={e => setFormData({...formData, startDate: e.target.value})}
                     />
                   </div>
                   <div className="w-1/2">
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">End Date</label>
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">End Date</label>
                     <input 
                       type="date"
-                      className="w-full bg-slate-800 border border-white/5 rounded-2xl px-4 py-3.5 text-sm text-white focus:border-indigo-500 outline-none [&::-webkit-calendar-picker-indicator]:invert"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm text-slate-900 focus:border-indigo-500 outline-none"
                       value={formData.endDate}
                       onChange={e => setFormData({...formData, endDate: e.target.value})}
                     />
@@ -266,7 +268,7 @@ export default function PromosTab() {
                 </div>
 
                 <div className="flex gap-3 pt-4">
-                  <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-2xl text-xs uppercase tracking-widest transition-all">Cancel</button>
+                  <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-2xl text-xs uppercase tracking-widest transition-all">Cancel</button>
                   <button type="submit" disabled={saving} className="flex-1 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-2xl shadow-xl hover:shadow-indigo-500/25 text-xs uppercase tracking-widest transition-all disabled:opacity-50">
                     {saving ? 'Saving...' : 'Deploy Promo'}
                   </button>
