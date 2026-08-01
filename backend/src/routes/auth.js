@@ -106,7 +106,7 @@ router.post('/verify-otp', loginLimiter, async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    res.cookie('pos_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
+    res.cookie('pos_token', token, { httpOnly: true, secure: true, sameSite: 'none', maxAge: 7 * 24 * 60 * 60 * 1000 });
 
     res.json({
       success: true,
@@ -291,7 +291,7 @@ router.post('/login', loginLimiter, async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    res.cookie('pos_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 });
+    res.cookie('pos_token', token, { httpOnly: true, secure: true, sameSite: 'none', maxAge: 24 * 60 * 60 * 1000 });
 
     // Audit log
     try {
@@ -408,7 +408,7 @@ router.post('/google', async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    res.cookie('pos_token', jwtToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 });
+    res.cookie('pos_token', jwtToken, { httpOnly: true, secure: true, sameSite: 'none', maxAge: 24 * 60 * 60 * 1000 });
 
     res.json({
       success: true,
@@ -611,7 +611,7 @@ router.post('/verify-registration', async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    res.cookie('pos_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
+    res.cookie('pos_token', token, { httpOnly: true, secure: true, sameSite: 'none', maxAge: 7 * 24 * 60 * 60 * 1000 });
 
     res.json({
       success: true,
@@ -770,7 +770,7 @@ router.post('/change-password', authenticate, async (req, res) => {
 
 // POST /api/auth/logout
 router.post('/logout', (req, res) => {
-  res.clearCookie('pos_token', { httpOnly: true, sameSite: 'lax' });
+  res.clearCookie('pos_token', { httpOnly: true, secure: true, sameSite: 'none' });
   res.json({ success: true, message: 'Logged out successfully.' });
 });
 

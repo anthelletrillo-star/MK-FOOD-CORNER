@@ -365,26 +365,26 @@ export default function Menu() {
       )}
       {/* Sticky Top Header Row */}
       <div className="sticky top-0 z-40 bg-surface-50/90 backdrop-blur-xl border-b border-surface-200/50 shadow-sm transition-all">
-        <div className="max-w-7xl mx-auto p-4 md:p-6 lg:px-8 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <Link to="/" className="inline-flex items-center gap-2 px-4 py-2 md:px-5 md:py-3 bg-white rounded-full text-xs md:text-sm font-bold text-surface-700 shadow-sm border border-surface-200 hover:border-primary-300 hover:shadow-md transition-all active:scale-95">
-              <span className="text-lg md:text-xl leading-none"><ArrowLeft className="w-5 h-5 leading-none" /></span> <span className="hidden sm:inline">{t('backHome')}</span><span className="sm:hidden">{t('back')}</span>
+        <div className="max-w-7xl mx-auto p-3 md:p-6 lg:px-8 flex justify-between items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
+            <Link to="/" className="inline-flex items-center gap-1.5 md:gap-2 px-3 py-2 md:px-5 md:py-3 bg-white rounded-full text-[10px] md:text-sm font-bold text-surface-700 shadow-sm border border-surface-200 hover:border-primary-300 hover:shadow-md transition-all active:scale-95">
+              <span className="text-base md:text-xl leading-none"><ArrowLeft className="w-4 h-4 md:w-5 md:h-5 leading-none" /></span> <span className="hidden sm:inline">{t('backHome')}</span><span className="sm:hidden">{t('back')}</span>
             </Link>
           </div>
 
-          <div className="flex items-center gap-4 relative">
+          <div className="flex items-center gap-1.5 md:gap-4 relative flex-wrap sm:flex-nowrap justify-end text-right">
             <button
               onClick={() => setShowPackages(true)}
-              className="flex items-center justify-center px-4 py-2 md:px-5 md:py-3 bg-white rounded-full text-xs md:text-sm font-black shadow-sm border border-surface-200 hover:border-primary-300 hover:shadow-md transition-all active:scale-95"
+              className="flex items-center justify-center px-3 py-2 md:px-5 md:py-3 bg-white rounded-full text-[10px] md:text-sm font-black shadow-sm border border-surface-200 hover:border-primary-300 hover:shadow-md transition-all active:scale-95"
               style={{ color: brandingColor }}
             >
               <span>Packages</span>
             </button>
             <button
               onClick={toggleLanguage}
-              className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-3 bg-white rounded-full text-xs md:text-sm font-black shadow-sm border border-surface-200 hover:border-primary-300 hover:shadow-md transition-all active:scale-95"
+              className="flex items-center gap-1 md:gap-2 px-2 py-2 md:px-4 md:py-3 bg-white rounded-full text-[10px] md:text-sm font-black shadow-sm border border-surface-200 hover:border-primary-300 hover:shadow-md transition-all active:scale-95"
             >
-              <span className={lang === 'en' ? 'text-primary-500' : 'text-surface-400'} style={lang === 'en' ? { color: brandingColor } : {}}>ENG</span>
+              <span className={lang === 'en' ? 'text-primary-500' : 'text-surface-400'} style={lang === 'en' ? { color: brandingColor } : {}}>EN</span>
               <span className="text-surface-300 font-normal">|</span>
               <span className={lang === 'tl' ? 'text-primary-500' : 'text-surface-400'} style={lang === 'tl' ? { color: brandingColor } : {}}>PH</span>
             </button>
@@ -393,19 +393,19 @@ export default function Menu() {
               <>
                 <button
                   onClick={() => setShowRewards(true)}
-                  className="animate-fade-in flex items-center gap-3 bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-2xl shadow-sm hover:bg-emerald-100 transition-all active:scale-95 group"
+                  className="animate-fade-in flex items-center gap-3 bg-emerald-50 border border-emerald-100 px-2 py-1.5 sm:px-4 sm:py-2 rounded-xl sm:rounded-2xl shadow-sm hover:bg-emerald-100 transition-all active:scale-95 group shrink-0"
                 >
-                  <div className="w-8 h-8 bg-emerald-500 rounded-xl flex items-center justify-center text-white text-lg shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform"><Gem className="w-4 h-4 text-emerald-100" /></div>
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-emerald-500 rounded-lg sm:rounded-xl flex items-center justify-center text-white text-base sm:text-lg shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform"><Gem className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-100" /></div>
                   <div className="text-left hidden sm:block">
                     <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest leading-none mb-0.5">{t('points')}</p>
                     <p className="text-sm font-black text-emerald-900 leading-none">{Math.floor(user.points || 0)}</p>
                   </div>
                 </button>
 
-                <div className="relative">
+                <div className="relative shrink-0">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="w-11 h-11 rounded-2xl flex items-center justify-center text-white font-black text-sm shadow-lg shadow-primary-500/20 hover:scale-105 active:scale-95 transition-all border-2 border-white"
+                    className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center text-white font-black text-xs sm:text-sm shadow-lg shadow-primary-500/20 hover:scale-105 active:scale-95 transition-all border-2 border-white"
                     style={{ backgroundColor: brandingColor }}
                   >
                     {getInitials(user.name)}
