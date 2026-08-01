@@ -199,12 +199,95 @@ router.post('/orders/:id/cancel', authenticate, authorize('cashier', 'admin'), a
       return res.status(400).json({ success: false, message: 'Cannot cancel a completed or already cancelled order.' });
     }
 
-    // Restore stock
+    // Restore stock + create reversal logs
     for (const item of order.items) {
       await prisma.product.update({
         where: { id: item.productId },
         data: { stock: { increment: item.quantity } }
       });
+
+      await prisma.inventoryLog.create({
+        data: {
+          productId: item.productId,
+          quantityChange: item.quantity,
+          reason: 'cancel',
+          referenceId: `CANCEL-${order.orderNumber}`
+        }
+      });
+
+      // Restore recipe ingredients
+      try {
+        const recipes = await prisma.recipeItem.findMany({ where: { productId: item.productId }, include: { rawIngredient: true } });
+        for (const recipe of recipes) {
+          const addAmount = (recipe.quantityUsed / Math.max(recipe.rawIngredient?.yield || 1, 0.001)) * item.quantity;
+          await prisma.rawIngredient.update({
+            where: { id: recipe.rawIngredientId },
+            data: { stock: { increment: addAmount } }
+          });
+          await prisma.rawIngredientLog.create({
+            data: {
+              rawIngredientId: recipe.rawIngredientId,
+              quantityChange: addAmount,
+              reason: 'cancel',
+              referenceId: `CANCEL-${order.orderNumber}`
+            }
+          });
+        }
+      } catch (err) {
+        console.error('Recipe reversal error:', err);
+      }
+
+      // Restore addon ingredients
+      if (item.addons) {
+        try {
+          const selectedAddons = typeof item.addons === 'string' ? JSON.parse(item.addons) : item.addons;
+          for (const addon of selectedAddons) {
+            if (addon.rawIngredientId && addon.quantityUsed) {
+              const addAmount = addon.quantityUsed * item.quantity;
+              await prisma.rawIngredient.update({
+                where: { id: addon.rawIngredientId },
+                data: { stock: { increment: addAmount } }
+              });
+              await prisma.rawIngredientLog.create({
+                data: {
+                  rawIngredientId: addon.rawIngredientId,
+                  quantityChange: addAmount,
+                  reason: 'cancel',
+                  referenceId: `CANCEL-${order.orderNumber}`
+                }
+              });
+            }
+          }
+        } catch (err) {
+          console.error('Addon reversal error:', err);
+        }
+      }
+
+      // Restore combo sub-items
+      if (item.comboChoices) {
+        try {
+          const choices = typeof item.comboChoices === 'string' ? JSON.parse(item.comboChoices) : item.comboChoices;
+          for (const key in choices) {
+            const subProduct = choices[key];
+            if (subProduct && subProduct.id) {
+              await prisma.product.update({
+                where: { id: parseInt(subProduct.id) },
+                data: { stock: { increment: item.quantity } }
+              });
+              await prisma.inventoryLog.create({
+                data: {
+                  productId: parseInt(subProduct.id),
+                  quantityChange: item.quantity,
+                  reason: 'cancel',
+                  referenceId: `CANCEL-${order.orderNumber}`
+                }
+              });
+            }
+          }
+        } catch (err) {
+          console.error('Combo reversal error:', err);
+        }
+      }
     }
 
     // Points Reversal Logic
