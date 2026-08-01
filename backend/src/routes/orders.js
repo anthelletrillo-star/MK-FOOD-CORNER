@@ -28,7 +28,7 @@ router.get('/history', authenticate, async (req, res) => {
 // POST /api/orders — Kiosk: Place new order
 router.post('/', async (req, res) => {
   try {
-    const { customerId, customerName, orderType, paymentMethod, items, notes, deliveryAddress, deliveryLat, deliveryLng, deliveryFee, paymentReference } = req.body;
+    const { customerId, customerName, orderType, paymentMethod, items, notes, deliveryAddress, deliveryLat, deliveryLng, deliveryFee, paymentReference, promoCode } = req.body;
 
     // RESTRICTION: Delivery orders must be paid first (no cash)
     if (orderType === 'delivery' && paymentMethod === 'cash') {
@@ -138,8 +138,74 @@ router.post('/', async (req, res) => {
     }
 
     const taxRate = parseFloat(process.env.TAX_RATE || '0.00');
-    const total = subtotal + (deliveryFee ? parseFloat(deliveryFee) : 0);
-    const taxAmount = taxRate > 0 ? (subtotal - (subtotal / (1 + taxRate))) : 0;
+    
+    // Validate Promo Code
+    let discountAmount = 0;
+    let appliedPromoId = null;
+    
+    if (promoCode && !tenant.saPromoDisabled) {
+      const promo = await prisma.promoCode.findUnique({
+        where: { tenantId_code: { tenantId, code: promoCode.toUpperCase() } }
+      });
+      
+      if (promo && promo.isActive) {
+        const now = new Date();
+        const pastStart = !promo.startDate || now >= promo.startDate;
+        const beforeEnd = !promo.endDate || now <= promo.endDate;
+        const limitOk = !promo.maxUses || promo.currentUses < promo.maxUses;
+        
+        if (pastStart && beforeEnd && limitOk) {
+          let applicableSubtotal = 0;
+          orderItems.forEach(item => {
+            let isApplicable = false;
+            // For category targeting, it requires the frontend to pass categoryId in the items,
+            // but we didn't store categoryId in orderItems. We'd have to fetch product category, but for simplicity:
+            // Since we queried product earlier, we should ensure category is checked, but let's assume we fetch it if we need to.
+            // Actually, we queried Product at line 68. Let's just do a quick DB check or rely on targeting.
+            // Wait, we didn't include categoryId in the product query. Let's assume frontend validation is primary, 
+            // but backend must re-validate. Wait, if it's too complex here, let's just do product-level or all-level.
+            // For robust backend calculation without querying every category:
+            isApplicable = true; // Simplified: we will just query the product to check.
+            
+            if (isApplicable) applicableSubtotal += item.subtotal;
+          });
+          
+          // Re-fetch products to verify category targeting properly
+          applicableSubtotal = 0;
+          for (const item of orderItems) {
+            let isApplicable = false;
+            const p = await prisma.product.findUnique({ where: { id: item.productId } });
+            
+            if (promo.appliesTo === 'ALL') {
+              isApplicable = true;
+            } else if (promo.appliesTo === 'PRODUCT' && promo.targetId === p.id) {
+              isApplicable = true;
+            } else if (promo.appliesTo === 'CATEGORY' && promo.targetId === p.categoryId) {
+              isApplicable = true;
+            }
+            
+            if (isApplicable) applicableSubtotal += item.subtotal;
+          }
+
+          if (promo.type === 'PERCENTAGE') {
+            discountAmount = applicableSubtotal * (promo.value / 100);
+          } else if (promo.type === 'FIXED') {
+            discountAmount = Math.min(applicableSubtotal, promo.value);
+          }
+          
+          if (discountAmount > 0) {
+            appliedPromoId = promo.id;
+          }
+        }
+      }
+    }
+
+    let total = subtotal + (deliveryFee ? parseFloat(deliveryFee) : 0) - discountAmount;
+    if (total < 0) total = 0;
+    
+    // Recalculate tax based on discounted subtotal (assuming tax is after discount)
+    const taxableAmount = subtotal - discountAmount;
+    const taxAmount = taxRate > 0 && taxableAmount > 0 ? (taxableAmount - (taxableAmount / (1 + taxRate))) : 0;
 
     // Handle Loyalty Redemptions & Role Check
     let validCustomerId = null;
@@ -254,6 +320,8 @@ router.post('/', async (req, res) => {
         status: 'pending',
         paymentStatus: 'unpaid',
         subtotal,
+        discountType: appliedPromoId ? 'promo' : null,
+        discountAmount,
         taxAmount,
         total,
         deliveryAddress: deliveryAddress || null,
@@ -261,7 +329,7 @@ router.post('/', async (req, res) => {
         deliveryLng: deliveryLng ? parseFloat(deliveryLng) : null,
         deliveryFee: deliveryFee ? parseFloat(deliveryFee) : 0,
         paymentReference: paymentReference || null,
-        notes: notes || null,
+        notes: (notes ? notes : '') + (appliedPromoId ? ` (Promo: ${promoCode})` : ''),
         items: { create: orderItems }
       },
       include: {
@@ -278,9 +346,17 @@ router.post('/', async (req, res) => {
         action: 'order_placed',
         entityType: 'order',
         entityId: order.id.toString(),
-        details: `Order #${order.orderNumber} placed by ${order.customerName}. Total: ₱${total.toFixed(2)}`
+        details: `Order #${order.orderNumber} placed by ${order.customerName}. Total: ₱${total.toFixed(2)}${appliedPromoId ? ` (with promo ${promoCode})` : ''}`
       }
     });
+
+    // Increment Promo Uses
+    if (appliedPromoId) {
+      await prisma.promoCode.update({
+        where: { id: appliedPromoId },
+        data: { currentUses: { increment: 1 } }
+      });
+    }
 
     // Decrement stock
     for (const item of items) {

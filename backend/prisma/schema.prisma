@@ -29,6 +29,7 @@ model Tenant {
   deliveryDisabled Boolean @default(false)
   saDeliveryDisabled Boolean @default(false)
   saRewardsDisabled  Boolean @default(false)
+  saPromoDisabled    Boolean @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -41,6 +42,7 @@ model Tenant {
   suppliers     Supplier[]
   rawIngredients RawIngredient[]
   eventPackages EventPackage[]
+  promoCodes    PromoCode[]
 }
 
 model User {
@@ -386,4 +388,30 @@ model EventPackage {
   updatedAt   DateTime @updatedAt
 
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+model PromoCode {
+  id              Int       @id @default(autoincrement())
+  tenantId        Int       @default(1)
+  code            String    // e.g., "SUMMER20"
+  type            String    // "PERCENTAGE" or "FIXED"
+  value           Float     // The discount amount (e.g., 20 for 20%, or 50 for ₱50)
+  
+  // Targeting
+  appliesTo       String    @default("ALL") // "ALL", "PRODUCT", "CATEGORY"
+  targetId        Int?      // Product ID or Category ID, if applicable
+  
+  // Limits
+  maxUses         Int?      // Null means unlimited
+  currentUses     Int       @default(0)
+  startDate       DateTime?
+  endDate         DateTime?
+  
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  tenant          Tenant    @relation(fields: [tenantId], references: [id])
+  
+  @@unique([tenantId, code])
 }

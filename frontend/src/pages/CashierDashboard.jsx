@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { formatCurrency, formatDate, getElapsedMinutes, playNotificationSound, unlockAudio, updateAppBadge, requestNotificationPermission, showSystemNotification } from '../utils/helpers';
 import { useDynamicBranding } from '../hooks/useDynamicBranding';
 import { applyTheme, clearTheme } from '../utils/theme';
-import { Clock, AlertTriangle, Store, User, CreditCard, Gift, Banknote, Smartphone, CheckCircle, Navigation, Printer, ChefHat, ShoppingBag, Truck, MapPin } from 'lucide-react';
+import { Clock, AlertTriangle, Store, User, CreditCard, Gift, Banknote, Smartphone, CheckCircle, Navigation, Printer, ChefHat, ShoppingBag, Truck, MapPin, LogOut } from 'lucide-react';
 
 export default function CashierDashboard() {
   const [orders, setOrders] = useState([]);
@@ -419,7 +419,7 @@ export default function CashierDashboard() {
       )}
 
       {/* Header */}
-      <header className="bg-white border-b border-surface-200 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between flex-shrink-0 z-10">
+      <header className="bg-white border-b border-surface-200 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between flex-shrink-0 z-10 no-print">
         <div className="flex items-center gap-2 sm:gap-4 min-w-0">
           {user?.tenantLogo ? (
             <img src={user.tenantLogo} className="w-8 h-8 rounded-lg object-cover shadow-sm" alt={user.tenantName} />
@@ -439,13 +439,13 @@ export default function CashierDashboard() {
 
         <div className="flex items-center gap-2 sm:gap-4">
           <span className="text-xs sm:text-sm font-medium text-surface-600 hidden sm:flex sm:items-center sm:gap-1.5"><User className="w-4 h-4" /> {user?.name}</span>
-          <button onClick={logoutUser} className="text-surface-400 hover:text-red-500 text-xs sm:text-sm font-medium transition-colors">Log Out</button>
+          <button onClick={logoutUser} className="text-surface-400 hover:text-red-500 text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5"><LogOut className="w-4 h-4" /> Log Out</button>
         </div>
       </header>
 
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Left Panel: Order List */}
-        <div className={`${selectedOrder ? 'hidden md:flex' : 'flex'} md:w-1/2 flex-col border-r border-surface-200 bg-surface-50 flex-1 md:flex-none min-w-0`}>
+        <div className={`${selectedOrder ? 'hidden md:flex' : 'flex'} md:w-1/2 flex-col border-r border-surface-200 bg-surface-50 flex-1 md:flex-none min-w-0 no-print`}>
           <div className="p-2 sm:p-4 border-b border-surface-200 flex gap-1.5 sm:gap-2 overflow-x-auto bg-white flex-shrink-0 scrollbar-hide">
             {['pending', 'confirmed', 'preparing', 'ready', 'on_the_way', 'completed'].map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)}
@@ -497,19 +497,19 @@ export default function CashierDashboard() {
         <div className={`${selectedOrder ? 'flex' : 'hidden md:flex'} md:w-1/2 flex-col bg-white overflow-hidden relative flex-1 md:flex-none`}>
           {/* Mobile back button */}
           {selectedOrder && (
-            <button onClick={() => setSelectedOrder(null)} className="md:hidden flex items-center gap-2 px-4 py-3 text-sm font-bold text-surface-600 border-b border-surface-200 bg-surface-50">
+            <button onClick={() => setSelectedOrder(null)} className="no-print md:hidden flex items-center gap-2 px-4 py-3 text-sm font-bold text-surface-600 border-b border-surface-200 bg-surface-50">
               <span className="text-lg">←</span> Back to Orders
             </button>
           )}
           {!selectedOrder ? (
-            <div className="h-full flex flex-col items-center justify-center text-surface-400">
+            <div className="h-full flex flex-col items-center justify-center text-surface-400 no-print">
               <div className="mb-4"><CreditCard className="w-16 h-16 text-surface-300" /></div>
               <p className="font-medium">Select an order to view details</p>
             </div>
           ) : (
             <div className="flex-1 flex flex-col overflow-hidden animate-slide-in">
               {/* Order Header */}
-              <div className="p-6 border-b border-surface-200 bg-surface-50 flex-shrink-0 flex justify-between items-start">
+              <div className="p-6 border-b border-surface-200 bg-surface-50 flex-shrink-0 flex justify-between items-start no-print">
                 <div>
                   <h2 className="font-heading text-2xl font-bold text-surface-900 mb-1">{selectedOrder.orderNumber}</h2>
                   <p className="text-surface-500">{selectedOrder.customerName} • {formatDate(selectedOrder.createdAt)}</p>
@@ -518,7 +518,7 @@ export default function CashierDashboard() {
               </div>
 
               {/* Scrollable Body */}
-              <div className="flex-1 overflow-y-auto flex flex-col">
+              <div className="flex-1 overflow-y-auto flex flex-col no-print">
                 {/* Delivery Info Banner */}
                 {selectedOrder.orderType === 'delivery' && (
                   <div className="mx-6 mt-4 p-4 bg-blue-50 border border-blue-100 rounded-2xl flex flex-col gap-3 flex-shrink-0 animate-fade-in shadow-sm">

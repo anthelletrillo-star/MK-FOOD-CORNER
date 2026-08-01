@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { createOrder, getPublicTenant, trackVisit } from '../services/api';
+import { createOrder, getPublicTenant, trackVisit, validatePromo } from '../services/api';
 import { formatCurrency } from '../utils/helpers';
 import { useAuth } from '../context/AuthContext';
 import { applyTheme } from '../utils/theme';
-import { Utensils, ShoppingBag, Banknote, Smartphone, CreditCard, ShoppingCart, Gem, MapPin, Hash, Truck, Download, CheckCircle } from 'lucide-react';
+import { Utensils, ShoppingBag, Banknote, Smartphone, CreditCard, ShoppingCart, Gem, MapPin, Hash, Truck, Download, CheckCircle, Tag } from 'lucide-react';
 import LocationPicker from '../components/LocationPicker';
 import { useSocket } from '../context/SocketContext';
 
@@ -128,6 +128,11 @@ export default function Checkout() {
   const [deliveryInfo, setDeliveryInfo] = useState({ address: '', lat: null, lng: null, fee: 0 });
   const [paymentReference, setPaymentReference] = useState('');
 
+  const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState(null);
+  const [promoError, setPromoError] = useState('');
+  const [validatingPromo, setValidatingPromo] = useState(false);
+
   useEffect(() => {
     const slug = tenantSlug || user?.tenantSlug;
     if (slug) {
@@ -166,8 +171,42 @@ export default function Checkout() {
 
   const subtotal = getSubtotal();
   const deliveryFee = orderType === 'delivery' ? deliveryInfo.fee : 0;
+  const promoDiscount = appliedPromo ? appliedPromo.discountAmount : 0;
   const tax = 0;
-  const total = subtotal + deliveryFee;
+  let total = subtotal + deliveryFee - promoDiscount;
+  if (total < 0) total = 0;
+
+  const handleApplyPromo = async () => {
+    if (!promoCodeInput.trim()) return;
+    setValidatingPromo(true);
+    setPromoError('');
+    try {
+      const orderItems = items.map(item => ({
+        productId: item.id,
+        quantity: item.quantity,
+        price: item.price,
+        categoryId: item.categoryId || null
+      }));
+      const res = await validatePromo({
+        tenantSlug: tenantSlug || user?.tenantSlug,
+        code: promoCodeInput.trim(),
+        items: orderItems
+      });
+      if (res.data.success) {
+        setAppliedPromo(res.data.data);
+        setPromoCodeInput('');
+      }
+    } catch (err) {
+      setPromoError(err.response?.data?.message || 'Invalid or expired promo code');
+    } finally {
+      setValidatingPromo(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoError('');
+  };
 
 
   if (items.length === 0 && !submitting) {
@@ -222,7 +261,8 @@ export default function Checkout() {
         deliveryLat: orderType === 'delivery' ? deliveryInfo.lat : undefined,
         deliveryLng: orderType === 'delivery' ? deliveryInfo.lng : undefined,
         deliveryFee: orderType === 'delivery' ? deliveryInfo.fee : undefined,
-        paymentReference: paymentMethod !== 'cash' ? paymentReference : undefined
+        paymentReference: paymentMethod !== 'cash' ? paymentReference : undefined,
+        promoCode: appliedPromo ? appliedPromo.code : undefined
       });
       const order = res.data.data;
       
@@ -471,6 +511,46 @@ export default function Checkout() {
           <textarea value={notes} onChange={e => setNotes(e.target.value)} className="input-field h-20 resize-none text-sm" placeholder={t('notesPlaceholder')} />
         </div>
 
+        {/* Promo Code System */}
+        {(!branding?.saPromoDisabled) && !isFullRedemption && (
+          <div className="glass-card p-5 animate-fade-in-up" style={{ animationDelay: '0.35s' }}>
+            <label className="flex items-center gap-2 text-sm font-semibold text-surface-700 mb-2">
+              <Tag className="w-4 h-4 text-indigo-500" /> Apply Promo Code
+            </label>
+            
+            {appliedPromo ? (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-emerald-800 text-sm tracking-tight">{appliedPromo.code}</p>
+                  <p className="text-emerald-600 text-xs font-semibold">Discount applied!</p>
+                </div>
+                <button type="button" onClick={handleRemovePromo} className="text-emerald-700 hover:text-red-500 text-xs font-black uppercase tracking-widest bg-white px-3 py-1.5 rounded-lg border border-emerald-200 shadow-sm transition-all active:scale-95">Remove</button>
+              </div>
+            ) : (
+              <div>
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    value={promoCodeInput} 
+                    onChange={e => setPromoCodeInput(e.target.value.toUpperCase())}
+                    placeholder="Enter code" 
+                    className="input-field flex-1 uppercase font-bold"
+                  />
+                  <button 
+                    type="button"
+                    onClick={handleApplyPromo}
+                    disabled={validatingPromo || !promoCodeInput.trim()}
+                    className="bg-indigo-600 font-bold px-5 rounded-xl text-white text-sm uppercase tracking-wider disabled:opacity-50 hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20 active:scale-95"
+                  >
+                    {validatingPromo ? '...' : 'Apply'}
+                  </button>
+                </div>
+                {promoError && <p className="text-red-500 text-xs font-semibold mt-2">{promoError}</p>}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Summary */}
         <div className="glass-card p-5 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
           <h3 className="font-heading font-bold text-surface-900 mb-3">{t('orderSummary')}</h3>
@@ -489,6 +569,12 @@ export default function Checkout() {
               <div className="flex justify-between text-sm">
                 <span className="text-surface-500">{t('deliveryFee')}</span>
                 <span className="text-surface-900 font-medium">{formatCurrency(deliveryFee)}</span>
+              </div>
+            )}
+            {appliedPromo && (
+              <div className="flex justify-between text-sm">
+                <span className="text-emerald-600 font-bold">Promo ({appliedPromo.code})</span>
+                <span className="text-emerald-600 font-bold">-{formatCurrency(promoDiscount)}</span>
               </div>
             )}
             <div className="flex justify-between text-lg font-bold font-heading">

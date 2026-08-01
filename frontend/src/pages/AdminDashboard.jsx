@@ -16,10 +16,11 @@ import AuditLogsTab from '../components/admin/LogsTab';
 import StaffTab from '../components/admin/StaffTab';
 import SuppliersTab from '../components/admin/SuppliersTab';
 import FeedbackTab from '../components/admin/FeedbackTab';
+import PromosTab from '../components/admin/PromosTab';
 import { formatCurrency } from '../utils/helpers';
 import { applyTheme, clearTheme } from '../utils/theme';
 import { useDynamicBranding } from '../hooks/useDynamicBranding';
-import { BarChart2, ShoppingBag, FolderTree, PackageSearch, Users, Truck, Package, RotateCcw, Wallet, LineChart, MessageSquare, ClipboardList, Settings, LogOut, Store, CircleDollarSign, Coins, ShoppingCart, Eye, Globe } from 'lucide-react';
+import { BarChart2, ShoppingBag, FolderTree, PackageSearch, Users, Truck, Package, RotateCcw, Wallet, LineChart, MessageSquare, ClipboardList, Settings, LogOut, Store, CircleDollarSign, Coins, ShoppingCart, Eye, Globe, Tag } from 'lucide-react';
 import { useSocket } from '../context/SocketContext';
 
 export default function AdminDashboard() {
@@ -124,6 +125,7 @@ export default function AdminDashboard() {
       items: [
         { id: 'staff', label: 'Staff', icon: <Users className="w-5 h-5" /> },
         { id: 'feedback', label: 'Feedback', icon: <MessageSquare className="w-5 h-5" /> },
+        { id: 'promos', label: 'Promos', icon: <Tag className="w-5 h-5" /> },
       ]
     },
     {
@@ -198,40 +200,6 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-h-0 overflow-hidden md:h-screen">
-        {/* Header */}
-        <header className="bg-white border-b border-surface-200 px-6 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm flex-shrink-0">
-          <div className="flex items-center gap-4">
-            {user?.tenantLogo ? (
-              <img src={user.tenantLogo} className="w-10 h-10 rounded-xl object-cover shadow-sm" alt={user.tenantName} />
-            ) : (
-              <div className="w-10 h-10 bg-primary-50 rounded-xl flex items-center justify-center text-primary-500 shadow-inner">
-                <Store className="w-5 h-5" />
-              </div>
-            )}
-            <div>
-              <h1 className="font-heading text-lg font-bold text-surface-900 leading-tight">
-                {user?.tenantName || 'Store'} Management
-              </h1>
-              <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest">
-                Admin Dashboard
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-4">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-bold text-surface-900">{user?.name}</p>
-              <p className="text-[10px] font-bold text-surface-400 uppercase">{user?.role}</p>
-            </div>
-            <div className="flex items-center gap-2 border-l border-surface-200 pl-2 sm:pl-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-indigo-600 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-primary-500/20">
-                {user?.name?.charAt(0) || 'H'}
-              </div>
-              <button onClick={logoutUser} className="md:hidden p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center">
-                <LogOut className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </header>
 
         <div className="flex-1 overflow-y-auto p-6 md:p-8">
           {activeTab === 'overview' && summary && (
@@ -330,6 +298,7 @@ export default function AdminDashboard() {
           {activeTab === 'products' && <ProductsTab />}
           {activeTab === 'staff' && <StaffTab />}
           {activeTab === 'suppliers' && <SuppliersTab />}
+          {activeTab === 'promos' && <PromosTab />}
           {activeTab === 'inventory' && <InventoryTab />}
           {activeTab === 'inventory-logs' && <InventoryLogsTab />}
           {activeTab === 'expenses' && <ExpensesTab />}

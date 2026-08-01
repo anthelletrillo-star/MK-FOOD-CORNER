@@ -372,7 +372,8 @@ router.post('/inventory/:id/restock', authenticate, authorize('admin'), async (r
 
 router.get('/inventory/logs', authenticate, authorize('admin'), async (req, res) => {
   try {
-    const logs = await prisma.inventoryLog.findMany({
+    // Fetch product inventory logs
+    const productLogs = await prisma.inventoryLog.findMany({
       where: { product: { tenantId: req.tenantId } },
       include: { 
         product: { select: { name: true } },
@@ -381,8 +382,26 @@ router.get('/inventory/logs', authenticate, authorize('admin'), async (req, res)
       orderBy: { createdAt: 'desc' },
       take: 200
     });
-    res.json({ success: true, data: logs });
+
+    // Fetch raw ingredient logs
+    const rawLogs = await prisma.rawIngredientLog.findMany({
+      where: { rawIngredient: { tenantId: req.tenantId } },
+      include: {
+        rawIngredient: { select: { name: true } }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 200
+    });
+
+    // Combine and sort both lists by date
+    const mergedLogs = [...productLogs, ...rawLogs].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    // Take exactly 200 of the merged results
+    const finalLogs = mergedLogs.slice(0, 200);
+
+    res.json({ success: true, data: finalLogs });
   } catch (error) {
+    console.error('Inventory Logs Error:', error);
     res.status(500).json({ success: false, message: 'Failed to load inventory logs.' });
   }
 });

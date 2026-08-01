@@ -58,7 +58,14 @@ export default function InventoryLogsTab() {
               {logs.map(log => (
                 <tr key={log.id} className="hover:bg-surface-50 transition-colors">
                   <td className="p-4 text-surface-500">{formatDate(log.createdAt, true)}</td>
-                  <td className="p-4 font-bold text-surface-900">{log.product?.name}</td>
+                  <td className="p-4 font-bold text-surface-900">
+                    <span className="flex items-center gap-2">
+                       {log.product?.name || log.rawIngredient?.name}
+                       {log.rawIngredient?.name && (
+                         <span className="px-1.5 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-orange-100 text-orange-700">Raw</span>
+                       )}
+                    </span>
+                  </td>
                   <td className="p-4 text-center">
                     <span className={`font-black ${log.quantityChange > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                       {log.quantityChange > 0 ? '+' : ''}{log.quantityChange}

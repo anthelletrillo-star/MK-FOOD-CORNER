@@ -125,7 +125,7 @@ router.get('/summary', authenticate, authorize('admin'), async (req, res) => {
       select: { primaryColor: true, secondaryColor: true }
     });
 
-    const [todayAgg, weekAgg, monthAgg, todayExp, weekExp, monthExp, totalProducts, lowStock, totalVisitsSetting] = await Promise.all([
+    const [todayAgg, weekAgg, monthAgg, todayExp, weekExp, monthExp, totalProducts, lowStock, totalVisitsSetting, inventoryLogs, rawLogs] = await Promise.all([
       prisma.order.aggregate({
         where: { tenantId: req.tenantId, status: 'completed', createdAt: { gte: today } },
         _sum: { total: true }, _count: { id: true }
@@ -152,7 +152,15 @@ router.get('/summary', authenticate, authorize('admin'), async (req, res) => {
       }),
       prisma.product.count({ where: { available: true, tenantId: req.tenantId } }),
       prisma.product.count({ where: { stock: { lt: 10 }, available: true, tenantId: req.tenantId } }),
-      prisma.systemSetting.findFirst({ where: { tenantId: req.tenantId, key: 'total_visits' } })
+      prisma.systemSetting.findFirst({ where: { tenantId: req.tenantId, key: 'total_visits' } }),
+      prisma.inventoryLog.findMany({
+        where: { product: { tenantId: req.tenantId }, reason: { in: ['order', 'waste'] }, createdAt: { gte: monthAgo } },
+        include: { product: { select: { costPrice: true } } }
+      }),
+      prisma.rawIngredientLog.findMany({
+        where: { rawIngredient: { tenantId: req.tenantId }, reason: { in: ['order', 'waste'] }, createdAt: { gte: monthAgo } },
+        include: { rawIngredient: { select: { costPrice: true } } }
+      })
     ]);
 
     // Single query for the 14-day chart
@@ -182,9 +190,17 @@ router.get('/summary', authenticate, authorize('admin'), async (req, res) => {
       .map(dateKey => dailyMap[dateKey]);
 
     const topCategories = await prisma.category.findMany({
-      where: { tenantId: req.tenantId },
+      where: { active: true, tenantId: req.tenantId },
       take: 5,
-      include: { _count: { select: { products: true } } }
+      include: { 
+        _count: { 
+          select: { 
+            products: {
+              where: { available: true }
+            } 
+          } 
+        } 
+      }
     });
 
     const totalVisits = parseInt(totalVisitsSetting?.value || '0');
@@ -193,6 +209,19 @@ router.get('/summary', authenticate, authorize('admin'), async (req, res) => {
     const io = req.app.get('io');
     const liveVisitors = io?.sockets?.adapter?.rooms?.get(`tenant-${req.tenantId}-visitors`)?.size || 0;
 
+    // --- COGS Calculation ---
+    let todayCogs = 0, weekCogs = 0, monthCogs = 0;
+    
+    const processCogsLog = (log, costPriceGetter) => {
+      const cost = Math.abs(log.quantityChange) * (costPriceGetter(log) || 0);
+      if (log.createdAt >= today) todayCogs += cost;
+      if (log.createdAt >= weekAgo) weekCogs += cost;
+      if (log.createdAt >= monthAgo) monthCogs += cost;
+    };
+
+    inventoryLogs?.forEach(log => processCogsLog(log, l => l.product?.costPrice));
+    rawLogs?.forEach(log => processCogsLog(log, l => l.rawIngredient?.costPrice));
+
     res.json({
       success: true,
       data: { 
@@ -200,25 +229,25 @@ router.get('/summary', authenticate, authorize('admin'), async (req, res) => {
           sales: todayAgg._sum.total || 0, 
           orders: todayAgg._count.id || 0,
           expenses: todayExp._sum.amount || 0,
-          profit: (todayAgg._sum.total || 0) - (todayExp._sum.amount || 0)
+          profit: (todayAgg._sum.total || 0) - (todayExp._sum.amount || 0) - todayCogs
         }, 
         week: { 
           sales: weekAgg._sum.total || 0, 
           orders: weekAgg._count.id || 0,
           expenses: weekExp._sum.amount || 0,
-          profit: (weekAgg._sum.total || 0) - (weekExp._sum.amount || 0)
+          profit: (weekAgg._sum.total || 0) - (weekExp._sum.amount || 0) - weekCogs
         }, 
         month: { 
           sales: monthAgg._sum.total || 0, 
           orders: monthAgg._count.id || 0,
           expenses: monthExp._sum.amount || 0,
-          profit: (monthAgg._sum.total || 0) - (monthExp._sum.amount || 0)
+          profit: (monthAgg._sum.total || 0) - (monthExp._sum.amount || 0) - monthCogs
         }, 
         totalProducts, 
         lowStock,
         dailySales,
         revenue: todayAgg._sum.total || 0,
-        totalExpenses: todayExp._sum.amount || 0,
+        totalExpenses: (todayExp._sum.amount || 0) + todayCogs,
         ordersCount: todayAgg._count.id || 0,
         productsCount: totalProducts,
         avgTicket: todayAgg._count.id > 0 ? (todayAgg._sum.total || 0) / todayAgg._count.id : 0,

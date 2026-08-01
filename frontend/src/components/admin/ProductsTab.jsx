@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getAdminProducts, createProduct, updateProduct, deleteProduct, hardDeleteProduct, getCategories, uploadImage, getSettings, getRawIngredients, getRecipes, addRecipeItem, removeRecipeItem } from '../../services/api';
 import { formatCurrency } from '../../utils/helpers';
-import { ClipboardList, FolderArchive, ImageIcon, Upload, FolderUp, Lightbulb, ArchiveX, AlertTriangle, CheckCircle, Gem, MoreVertical, Pencil, Trash2, ArchiveRestore } from 'lucide-react';
+import { ClipboardList, FolderArchive, ImageIcon, Upload, FolderUp, Lightbulb, ArchiveX, AlertTriangle, CheckCircle, Gem, MoreVertical, Pencil, Trash2, ArchiveRestore, Download } from 'lucide-react';
 import { useRef } from 'react';
 
 export default function ProductsTab() {
@@ -61,6 +61,37 @@ export default function ProductsTab() {
                          (statusFilter === 'archived' && !p.available);
     return matchesSearch && matchesCategory && matchesStatus;
   });
+
+  const handleExportCSV = () => {
+    let csv = '\ufeffProduct Name,Description,Category,Status,Selling Price (₱),Cost Price (₱),Stock,Points Cost,Dietary Badges,Size Variants,Add-ons\n';
+    
+    filteredProducts.forEach(p => {
+      const catName = p.category?.name || 'Uncategorized';
+      const status = p.available ? 'Active' : 'Archived';
+      const badges = p.tags ? `"${p.tags}"` : 'None';
+      const safeName = `"${(p.name || '').replace(/"/g, '""')}"`;
+      const safeDesc = `"${(p.description || '').replace(/"/g, '""')}"`;
+      
+      const sizesStr = p.sizes && p.sizes.length > 0 
+        ? `"${p.sizes.map(s => `${s.name}: ₱${s.price}`).join(', ')}"`
+        : 'None';
+        
+      const addonsStr = p.addons && p.addons.length > 0
+        ? `"${p.addons.map(a => `${a.name} (+₱${a.price})`).join(', ')}"`
+        : 'None';
+        
+      csv += `${safeName},${safeDesc},"${catName}",${status},${p.price},${p.costPrice || 0},${p.stock},${p.pointsCost || 0},${badges},${sizesStr},${addonsStr}\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Products_Export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   useEffect(() => {
     loadData();
@@ -269,6 +300,12 @@ export default function ProductsTab() {
       <div className="flex justify-between items-center mb-6">
         <h2 className="font-heading text-2xl font-bold text-surface-900">Products & Menu</h2>
         <div className="flex gap-3">
+          <button 
+            onClick={handleExportCSV}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-all border-2 bg-white text-surface-600 border-surface-200 hover:border-primary-300 hover:text-primary-600 shadow-sm"
+          >
+            <Download className="w-4 h-4" /> Export CSV
+          </button>
           <button 
             onClick={() => setStatusFilter(statusFilter === 'archived' ? 'active' : 'archived')} 
             className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-all border-2 ${statusFilter === 'archived' ? 'bg-primary-600 text-white border-primary-600 shadow-lg' : 'bg-white text-surface-600 border-surface-200 hover:border-primary-300'}`}
