@@ -90,11 +90,11 @@ export default function PromosTab() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
-            <Tag className="w-5 h-5 text-indigo-400" />
+          <h2 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+            <Tag className="w-5 h-5 text-indigo-500" />
             Promo Codes & Discounts
           </h2>
-          <p className="text-xs text-slate-400 mt-1">Manage active discounts for your customers.</p>
+          <p className="text-xs text-slate-500 mt-1">Manage active discounts for your customers.</p>
         </div>
         <button 
           onClick={() => { resetForm(); setShowModal(true); }}
