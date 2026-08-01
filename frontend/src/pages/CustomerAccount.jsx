@@ -39,7 +39,6 @@ export default function CustomerAccount() {
       joinRoom(room, user.tenantId);
       
       const cleanup = onEvent('loyalty_updated', (data) => {
-        console.log('✨ Live Points Update Received:', data);
         refreshUser(); // Refresh AuthContext user (points)
         loadActivity(); // Refresh activity timeline
       });

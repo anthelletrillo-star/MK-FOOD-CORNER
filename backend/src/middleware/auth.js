@@ -4,10 +4,11 @@ const prisma = require('../lib/prisma');
 const authenticate = async (req, res, next) => {
   try {
     let token = null;
-    const authHeader = req.headers.authorization;
     
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.split(' ')[1];
+    if (req.cookies && req.cookies.pos_token) {
+      token = req.cookies.pos_token;
+    } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      token = req.headers.authorization.split(' ')[1];
     } else if (req.query.token) {
       token = req.query.token;
     }

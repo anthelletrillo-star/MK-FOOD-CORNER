@@ -64,7 +64,6 @@ export default function CashierDashboard() {
     if (!connected || !onEvent) return;
 
     const unsub = onEvent('new_order', (data) => {
-      console.log('Realtime New Order:', data);
       playNotificationSound('newOrder');
 
       const displayNum = data.order?.orderNumber?.includes('-') ? data.order.orderNumber.split('-')[1] : data.order?.orderNumber;
@@ -74,7 +73,6 @@ export default function CashierDashboard() {
     });
 
     const unsub2 = onEvent('order_update', (data) => {
-      console.log('Realtime Order Update:', data);
       loadOrders(); // Refresh list when order status changes
     });
 

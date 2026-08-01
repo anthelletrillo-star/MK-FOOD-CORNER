@@ -2,13 +2,14 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const prisma = require('./lib/prisma');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE'] }
+  cors: { origin: (origin, callback) => callback(null, true), credentials: true, methods: ['GET', 'POST', 'PUT', 'DELETE'] }
 });
 
 // Test connection on startup
@@ -93,7 +94,8 @@ async function purgeOtherTenants() {
 const path = require('path');
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: (origin, callback) => callback(null, true), credentials: true }));
+app.use(cookieParser());
 app.use('/api/admin/upload-image', express.json({ limit: '50mb' }));
 app.use('/api/admin/upload-image', express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.json({ limit: '2mb' }));

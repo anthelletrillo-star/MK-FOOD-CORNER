@@ -4,13 +4,12 @@ const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' :
 
 const api = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
   headers: { 'Content-Type': 'application/json', Accept: 'application/json' }
 });
 
 // Auth & Tenant interceptor
 api.interceptors.request.use(config => {
-  const token = localStorage.getItem('pos_token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
 
   // TENANT DETECTION: Extract company name from URL (e.g. mcdonalds.your-pos.com)
   const hostname = window.location.hostname;
@@ -45,6 +44,7 @@ export const googleLogin = (data) => api.post('/auth/google', data);
 export const register = (data) => api.post('/auth/register', data);
 export const registerCustomer = (data) => api.post('/auth/register-customer', data);
 export const getMe = () => api.get('/auth/me');
+export const logoutRequest = () => api.post('/auth/logout');
 export const changePassword = (data) => api.post('/auth/change-password', data);
 export const requestOTP = (data) => api.post('/auth/request-otp', data);
 export const verifyOTP = (data) => api.post('/auth/verify-otp', data);

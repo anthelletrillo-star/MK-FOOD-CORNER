@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { getMe } from '../services/api';
+import { getMe, logoutRequest } from '../services/api';
 import { LogOut } from 'lucide-react';
 
 const AuthContext = createContext(null);
@@ -20,47 +20,39 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem('pos_token');
-    if (token) {
-      getMe()
-        .then(res => {
-          if (res.data && res.data.success) {
-            const userData = res.data.data;
-            
-            // Enforce Tenant Boundaries
-            const urlParams = new URLSearchParams(window.location.search);
-            const currentTenantSlug = urlParams.get('tenant') || 'project-million';
-            const userTenantSlug = userData.tenantSlug || userData.tenant?.slug || 'project-million';
-            
-            // Allow admins to roam? Actually, let's keep it strict for now.
-            if (currentTenantSlug !== userTenantSlug && userData.role === 'customer') {
-              console.warn(`Tenant mismatch. User belongs to ${userTenantSlug}, but visited ${currentTenantSlug}. Logging out.`);
-              localStorage.removeItem('pos_token');
-              localStorage.removeItem('tenant_id');
-              setUser(null);
-            } else {
-              setUser(userData);
-            }
-          } else {
-            localStorage.removeItem('pos_token');
+    getMe()
+      .then(res => {
+        if (res.data && res.data.success) {
+          const userData = res.data.data;
+          
+          // Enforce Tenant Boundaries
+          const urlParams = new URLSearchParams(window.location.search);
+          const currentTenantSlug = urlParams.get('tenant') || 'project-million';
+          const userTenantSlug = userData.tenantSlug || userData.tenant?.slug || 'project-million';
+          
+          if (currentTenantSlug !== userTenantSlug && userData.role === 'customer') {
+            console.warn(`Tenant mismatch. User belongs to ${userTenantSlug}, but visited ${currentTenantSlug}. Logging out.`);
+            logoutRequest();
             localStorage.removeItem('tenant_id');
+            setUser(null);
+          } else {
+            setUser(userData);
           }
-        })
-        .catch(() => { 
-          localStorage.removeItem('pos_token'); 
+        } else {
           localStorage.removeItem('tenant_id');
-          setUser(null);
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+        }
+      })
+      .catch(() => { 
+        localStorage.removeItem('tenant_id');
+        setUser(null);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const loginUser = (token, userData) => {
-    localStorage.setItem('pos_token', token);
+    // token is now managed by HttpOnly cookie
     if (userData.tenantId) {
       localStorage.setItem('tenant_id', userData.tenantId.toString());
     }
@@ -76,9 +68,14 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const performLogout = () => {
+  const performLogout = async () => {
     const role = user?.role;
-    localStorage.removeItem('pos_token');
+    try {
+      await logoutRequest();
+    } catch (e) {
+      console.error('Logout error:', e);
+    }
+    
     localStorage.removeItem('tenant_id');
     setUser(null);
     setShowLogoutConfirm(false);

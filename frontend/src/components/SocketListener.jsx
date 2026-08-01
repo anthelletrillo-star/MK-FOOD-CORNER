@@ -14,7 +14,6 @@ export default function SocketListener() {
 
       // Listen for loyalty point updates
       const cleanup = onEvent('loyalty_updated', (data) => {
-        console.log('💎 Loyalty points updated!', data);
         refreshUser();
       });
 

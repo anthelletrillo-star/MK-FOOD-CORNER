@@ -106,6 +106,8 @@ router.post('/verify-otp', loginLimiter, async (req, res) => {
       { expiresIn: '7d' }
     );
 
+    res.cookie('pos_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
+
     res.json({
       success: true,
       token,
@@ -289,6 +291,8 @@ router.post('/login', loginLimiter, async (req, res) => {
       { expiresIn: '24h' }
     );
 
+    res.cookie('pos_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 });
+
     // Audit log
     try {
       await prisma.auditLog.create({
@@ -403,6 +407,8 @@ router.post('/google', async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
+
+    res.cookie('pos_token', jwtToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 });
 
     res.json({
       success: true,
@@ -605,6 +611,8 @@ router.post('/verify-registration', async (req, res) => {
       { expiresIn: '7d' }
     );
 
+    res.cookie('pos_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
+
     res.json({
       success: true,
       message: 'Email verified successfully!',
@@ -758,6 +766,12 @@ router.post('/change-password', authenticate, async (req, res) => {
     console.error('Change password error:', error);
     res.status(500).json({ success: false, message: 'Failed to change password.' });
   }
+});
+
+// POST /api/auth/logout
+router.post('/logout', (req, res) => {
+  res.clearCookie('pos_token', { httpOnly: true, sameSite: 'lax' });
+  res.json({ success: true, message: 'Logged out successfully.' });
 });
 
 module.exports = router;
