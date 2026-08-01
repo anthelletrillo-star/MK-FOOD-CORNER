@@ -979,32 +979,32 @@ export default function CashierDashboard() {
                 </div>
 
                 <div className="receipt-info">
-                  <p><span>ORDER NO:</span> <strong>{selectedOrder.orderNumber}</strong></p>
-                  <p><span>CASHIER:</span> <span>{user?.name}</span></p>
-                  <p><span>DATE:</span> <span>{formatDate(selectedOrder.createdAt)}</span></p>
-                  <p><span>TYPE:</span> <span>{selectedOrder.orderType?.toUpperCase()}</span></p>
+                  <p><span>Order No.</span> <strong>{selectedOrder.orderNumber}</strong></p>
+                  <p><span>Cashier</span> <span style={{fontWeight: 700}}>{user?.name}</span></p>
+                  <p><span>Date</span> <span>{formatDate(selectedOrder.createdAt)}</span></p>
+                  <p><span>Type</span> <span style={{fontWeight: 700}}>{selectedOrder.orderType?.toUpperCase()?.replace('_', ' ')}</span></p>
                 </div>
 
                 <div className="receipt-divider"></div>
 
-                <table className="w-full receipt-table">
+                <table className="receipt-table">
                   <thead>
                     <tr>
-                      <th className="w-1/2">ITEM</th>
-                      <th className="text-center">QTY</th>
-                      <th className="text-right">PRICE</th>
+                      <th className="w-[60%]">Item</th>
+                      <th className="text-center w-[15%]">Qty</th>
+                      <th className="text-right w-[25%]">Price</th>
                     </tr>
                   </thead>
                   <tbody>
                     {selectedOrder.items?.map(item => (
                       <tr key={item.id}>
-                        <td>
+                        <td className="item-col">
                           {item.productName}
                           {item.addons && JSON.parse(item.addons).map(a => (
-                            <div key={a.name} style={{ fontSize: '9px', opacity: 0.7 }}>+ {a.name}</div>
+                            <div key={a.name} className="item-addon text-slate-700">+ {a.name}</div>
                           ))}
                           {item.comboChoices && (
-                            <div style={{ fontSize: '9px', opacity: 0.8, fontWeight: 'bold' }}>
+                            <div className="item-addon text-slate-800 font-bold">
                               + {(() => {
                                 try {
                                   const choices = JSON.parse(item.comboChoices);
@@ -1023,19 +1023,19 @@ export default function CashierDashboard() {
 
                 <div className="receipt-divider"></div>
 
-                <div className="space-y-1">
-                  <div className="receipt-total-row">
-                    <span>SUBTOTAL</span>
+                <div className="space-y-1 mt-2">
+                  <div className="receipt-total-row" style={{opacity: 0.8}}>
+                    <span>Subtotal</span>
                     <span>{formatCurrency(selectedOrder.subtotal)}</span>
                   </div>
                   {selectedOrder.discountAmount > 0 && (
                     <div className="receipt-total-row">
-                      <span>DISCOUNT ({selectedOrder.discountType})</span>
+                      <span>Discount ({selectedOrder.discountType})</span>
                       <span>-{formatCurrency(selectedOrder.discountAmount)}</span>
                     </div>
                   )}
                   {selectedOrder.taxAmount > 0 && (
-                    <div className="receipt-total-row">
+                    <div className="receipt-total-row" style={{opacity: 0.8}}>
                       <span>VAT (12%)</span>
                       <span>{formatCurrency(selectedOrder.taxAmount)}</span>
                     </div>
@@ -1046,20 +1046,28 @@ export default function CashierDashboard() {
                   </div>
                 </div>
 
-                <div className="receipt-info mt-4" style={{ borderTop: '1px solid #000', paddingTop: '2mm' }}>
-                  <p><span>METHOD:</span> <strong>{selectedOrder.paymentMethod?.toUpperCase()}</strong></p>
+                <div className="receipt-divider"></div>
+
+                <div className="receipt-info" style={{ marginTop: '4mm' }}>
+                  <p><span>Payment Method</span> <strong>{selectedOrder.paymentMethod?.toUpperCase()}</strong></p>
                   {selectedOrder.amountReceived > 0 && (
                     <>
-                      <p><span>RECEIVED:</span> <span>{formatCurrency(selectedOrder.amountReceived)}</span></p>
-                      <p><span>CHANGE:</span> <span>{formatCurrency(selectedOrder.amountReceived - selectedOrder.total)}</span></p>
+                      <p><span>Amount Received</span> <span>{formatCurrency(selectedOrder.amountReceived)}</span></p>
+                      <p><span>Change Due</span> <strong>{formatCurrency(selectedOrder.amountReceived - selectedOrder.total)}</strong></p>
                     </>
                   )}
                 </div>
 
                 <div className="receipt-footer">
-                  <p>CUSTOMER COPY</p>
-                  <p>THANK YOU FOR YOUR PATRONAGE!</p>
-                  <p className="mt-2" style={{ fontSize: '8px', opacity: 0.6 }}>{window.location.hostname}</p>
+                  <div style={{ marginBottom: '8px' }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '24px', height: '24px', margin: '0 auto', display: 'block' }}>
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                  </div>
+                  <p style={{fontSize: '14px', fontWeight: 900}}>THANK YOU!</p>
+                  <p style={{marginTop: '2mm', fontWeight: 600, fontSize: '10px'}}>PLEASE COME AGAIN</p>
+                  <p style={{marginTop: '5mm', fontWeight: 500, fontSize: '9px', opacity: 0.6}}>Powered by Hometown Brew POS</p>
+                  <p style={{marginTop: '1mm', fontWeight: 500, fontSize: '8px', opacity: 0.4}}>{window.location.hostname}</p>
                 </div>
               </div>
             </div>
