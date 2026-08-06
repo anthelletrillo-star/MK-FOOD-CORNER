@@ -157,7 +157,24 @@ export default function ReportsTab() {
         </div>
         <div className="flex gap-3">
           <button
-            onClick={() => window.open(`${import.meta.env.VITE_API_URL}/reports/export/sales?token=${localStorage.getItem('pos_token')}`, '_blank')}
+            onClick={async () => {
+              try {
+                const { exportSalesCSV } = await import('../../services/api');
+                const res = await exportSalesCSV();
+                const blob = new Blob([res.data], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Sales_Report_${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+              } catch (e) {
+                console.error('Export failed:', e);
+                alert('Failed to export sales. Please try again.');
+              }
+            }}
             className="px-6 py-2.5 bg-white border border-surface-200 hover:border-primary-500 hover:text-primary-600 text-surface-600 font-bold rounded-2xl transition-all shadow-sm flex items-center gap-2 text-sm group"
           >
             Export Sales (CSV)

@@ -206,13 +206,7 @@ export default function Menu() {
       setComboStep(1);
       setAddOpts({ size: '', flavor: '', addons: [], notes: '', comboChoices: { group1: null, group2: null } });
     } else {
-      // Auto-select first available size if sizes exist
-      let defaultSize = '';
-      if (product.sizes && Array.isArray(product.sizes) && product.sizes.length > 0) {
-        const firstAvailable = product.sizes.find(s => s.available !== false);
-        if (firstAvailable) defaultSize = firstAvailable.name;
-      }
-      setAddOpts({ size: defaultSize, flavor: '', addons: [], notes: '', comboChoices: null });
+      setAddOpts({ size: null, flavor: '', addons: [], notes: '', comboChoices: null });
     }
     setSelectedProduct(product);
     window.history.pushState({ modalOpen: 'product' }, '');
@@ -272,6 +266,12 @@ export default function Menu() {
   }, []);
 
   const handleAddToCart = (product) => {
+    // Require option selection if product has options
+    if (product.sizes && Array.isArray(product.sizes) && product.sizes.length > 0 && !addOpts.size) {
+      alert('Please choose an option first.');
+      return;
+    }
+
     // Resolve size-specific price for cart
     let sizePrice = null;
     if (addOpts.size && product.sizes && Array.isArray(product.sizes)) {
@@ -280,7 +280,7 @@ export default function Menu() {
     }
     addToCart(product, { ...addOpts, sizePrice, isRedemption: product.isRedemption });
     closeProductModal();
-    setAddOpts({ size: '', flavor: '', addons: [], notes: '', comboChoices: null });
+    setAddOpts({ size: null, flavor: '', addons: [], notes: '', comboChoices: null });
     setComboStep(1);
   };
 

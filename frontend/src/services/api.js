@@ -184,4 +184,8 @@ export const updatePromo = (id, data) => api.put(`/promos/${id}`, data);
 export const deletePromo = (id) => api.delete(`/promos/${id}`);
 export const validatePromo = (data) => api.post('/promos/validate', data);
 
+// Reports Export
+export const exportSalesCSV = () => api.get('/reports/export/sales', { responseType: 'blob' });
+export const exportInventoryCSV = () => api.get('/reports/export/inventory', { responseType: 'blob' });
+
 export default api;

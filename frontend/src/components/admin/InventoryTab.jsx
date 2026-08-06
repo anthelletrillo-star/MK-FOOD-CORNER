@@ -144,7 +144,24 @@ export default function InventoryTab() {
               </button>
             )}
             <button
-              onClick={() => window.open(`${import.meta.env.VITE_API_URL}/reports/export/inventory?token=${localStorage.getItem('pos_token')}`, '_blank')}
+              onClick={async () => {
+                try {
+                  const { exportInventoryCSV } = await import('../../services/api');
+                  const res = await exportInventoryCSV();
+                  const blob = new Blob([res.data], { type: 'text/csv' });
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `Inventory_Report_${new Date().toISOString().split('T')[0]}.csv`;
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+                  window.URL.revokeObjectURL(url);
+                } catch (e) {
+                  console.error('Export failed:', e);
+                  alert('Failed to export inventory. Please try again.');
+                }
+              }}
               className="px-4 py-2 bg-white border border-surface-200 hover:border-emerald-500 hover:text-emerald-600 text-surface-600 font-bold rounded-xl transition-all shadow-sm flex items-center gap-2 text-xs group"
             >
               Export CSV
