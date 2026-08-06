@@ -17,11 +17,11 @@ router.post('/upload-image', authenticate, authorize('admin'), async (req, res) 
     // Detect type and extension
     const match = image.match(/^data:(\w+)\/(\w+);base64,/);
     if (!match) return res.status(400).json({ success: false, message: 'Invalid file format' });
-    
-    const type = match[1]; 
+
+    const type = match[1];
     const extension = match[2];
     const mimeType = `${type}/${extension}`;
-    
+
     const base64Data = image.split(';base64,').pop();
     const buffer = Buffer.from(base64Data, 'base64');
     const fileName = `${req.tenantId || 'global'}/${Date.now()}-${name?.replace(/\s+/g, '-').toLowerCase() || 'media'}.${extension}`;
@@ -44,8 +44,8 @@ router.post('/upload-image', authenticate, authorize('admin'), async (req, res) 
         console.error('Failed to list buckets:', e);
       }
 
-      return res.status(500).json({ 
-        success: false, 
+      return res.status(500).json({
+        success: false,
         message: `Storage upload failed: ${error.message || 'No bucket'}. Existing buckets: [${availableBuckets.join(', ') || 'none'}]. Please name your bucket "pos-media" or rename it.`,
         error: error
       });
@@ -59,8 +59,8 @@ router.post('/upload-image', authenticate, authorize('admin'), async (req, res) 
     res.json({ success: true, url: publicUrl });
   } catch (error) {
     console.error('Upload Error:', error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: `Failed to upload media: ${error.message}`,
       details: error.stack
     });
@@ -71,14 +71,14 @@ router.get('/orders', authenticate, authorize('admin'), async (req, res) => {
     const { status, page = 1, limit = 50, search } = req.query;
     const where = { tenantId: req.tenantId };
     if (status && status !== 'all') where.status = status;
-    
+
     if (search) {
       where.OR = [
         { orderNumber: { contains: search, mode: 'insensitive' } },
         { customerName: { contains: search, mode: 'insensitive' } }
       ];
     }
-    
+
     const orders = await prisma.order.findMany({
       where,
       include: { items: true, payments: true },
@@ -126,13 +126,15 @@ router.post('/products', authenticate, authorize('admin'), async (req, res) => {
         comboGroup2Name: comboGroup2Name || null,
         tags: tags || null,
         sizes: sizes && sizes.length > 0 ? sizes : null,
-        addons: addons ? { create: addons.map(a => ({ 
-          tenantId: req.tenantId, 
-          name: a.name, 
-          price: parseFloat(a.price),
-          rawIngredientId: a.rawIngredientId ? parseInt(a.rawIngredientId) : null,
-          quantityUsed: a.quantityUsed ? parseFloat(a.quantityUsed) : null
-        })) } : undefined
+        addons: addons ? {
+          create: addons.map(a => ({
+            tenantId: req.tenantId,
+            name: a.name,
+            price: parseFloat(a.price),
+            rawIngredientId: a.rawIngredientId ? parseInt(a.rawIngredientId) : null,
+            quantityUsed: a.quantityUsed ? parseFloat(a.quantityUsed) : null
+          }))
+        } : undefined
       },
       include: { category: true, addons: true }
     });
@@ -153,7 +155,7 @@ router.put('/products/:id', authenticate, authorize('admin'), async (req, res) =
     // Handle addons: Delete old ones and create new ones (sync)
     if (addons) {
       await prisma.productAddon.deleteMany({
-        where: { 
+        where: {
           productId: parseInt(req.params.id),
           tenantId: req.tenantId // DEFENSIVE: Ensure we only delete our own addons
         }
@@ -166,7 +168,7 @@ router.put('/products/:id', authenticate, authorize('admin'), async (req, res) =
         name, description, price: price ? parseFloat(price) : undefined,
         costPrice: costPrice !== undefined ? parseFloat(costPrice) : undefined,
         image, categoryId: categoryId ? parseInt(categoryId) : undefined,
-        stock: stock !== undefined ? parseInt(stock) : undefined, 
+        stock: stock !== undefined ? parseInt(stock) : undefined,
         available,
         pointsCost: pointsCost !== undefined ? (pointsCost ? parseInt(pointsCost) : null) : undefined,
         isCombo: isCombo !== undefined ? isCombo : undefined,
@@ -174,14 +176,14 @@ router.put('/products/:id', authenticate, authorize('admin'), async (req, res) =
         comboGroup2Name: comboGroup2Name !== undefined ? comboGroup2Name : undefined,
         tags: tags !== undefined ? tags : undefined,
         sizes: sizes !== undefined ? (sizes && sizes.length > 0 ? sizes : null) : undefined,
-        addons: addons ? { 
-          create: addons.map(a => ({ 
-            tenantId: req.tenantId, 
-            name: a.name, 
+        addons: addons ? {
+          create: addons.map(a => ({
+            tenantId: req.tenantId,
+            name: a.name,
             price: parseFloat(a.price),
             rawIngredientId: a.rawIngredientId ? parseInt(a.rawIngredientId) : null,
             quantityUsed: a.quantityUsed ? parseFloat(a.quantityUsed) : null
-          })) 
+          }))
         } : undefined
       },
       include: { category: true, addons: true }
@@ -198,20 +200,20 @@ router.put('/products/:id', authenticate, authorize('admin'), async (req, res) =
 router.delete('/products/:id/hard', authenticate, authorize('admin'), async (req, res) => {
   try {
     const productId = parseInt(req.params.id);
-    
+
     // Perform HARD DELETE
     const product = await prisma.product.delete({
       where: { id: productId, tenantId: req.tenantId }
     });
 
     await prisma.auditLog.create({
-      data: { 
-        userId: req.user.id, 
+      data: {
+        userId: req.user.id,
         tenantId: req.tenantId,
-        action: 'hard_delete_product', 
-        entityType: 'product', 
-        entityId: product.name, 
-        details: `Permanently deleted product "${product.name}"` 
+        action: 'hard_delete_product',
+        entityType: 'product',
+        entityId: product.name,
+        details: `Permanently deleted product "${product.name}"`
       }
     });
 
@@ -225,7 +227,7 @@ router.delete('/products/:id/hard', authenticate, authorize('admin'), async (req
 router.delete('/products/:id', authenticate, authorize('admin'), async (req, res) => {
   try {
     const productId = parseInt(req.params.id);
-    
+
     // Perform SOFT DELETE (Archive)
     const product = await prisma.product.update({
       where: { id: productId, tenantId: req.tenantId },
@@ -233,13 +235,13 @@ router.delete('/products/:id', authenticate, authorize('admin'), async (req, res
     });
 
     await prisma.auditLog.create({
-      data: { 
-        userId: req.user.id, 
+      data: {
+        userId: req.user.id,
         tenantId: req.tenantId,
-        action: 'archive_product', 
-        entityType: 'product', 
-        entityId: product.name, 
-        details: `Archived product "${product.name}"` 
+        action: 'archive_product',
+        entityType: 'product',
+        entityId: product.name,
+        details: `Archived product "${product.name}"`
       }
     });
 
@@ -271,11 +273,11 @@ router.post('/staff', authenticate, authorize('admin'), async (req, res) => {
       return res.status(400).json({ success: false, message: 'All fields are required.' });
     }
 
-    const existing = await prisma.user.findFirst({ 
-      where: { 
+    const existing = await prisma.user.findFirst({
+      where: {
         email,
-        tenantId: req.tenantId 
-      } 
+        tenantId: req.tenantId
+      }
     });
     if (existing) return res.status(400).json({ success: false, message: 'Email already exists in this shop.' });
 
@@ -317,9 +319,9 @@ router.put('/staff/:id', authenticate, authorize('admin'), async (req, res) => {
 
 router.delete('/staff/:id', authenticate, authorize('admin'), async (req, res) => {
   try {
-    await prisma.user.update({ 
-      where: { id: parseInt(req.params.id), tenantId: req.tenantId }, 
-      data: { active: false } 
+    await prisma.user.update({
+      where: { id: parseInt(req.params.id), tenantId: req.tenantId },
+      data: { active: false }
     });
     await prisma.auditLog.create({
       data: { tenantId: req.tenantId, userId: req.user.id, action: 'deactivate_staff', entityType: 'user', entityId: String(req.params.id), details: `Deactivated staff ID: ${req.params.id}` }
@@ -352,10 +354,10 @@ router.post('/inventory/:id/restock', authenticate, authorize('admin'), async (r
       data: { stock: { increment: parseInt(quantity) } }
     });
     await prisma.inventoryLog.create({
-      data: { 
-        productId: product.id, 
-        quantityChange: parseInt(quantity), 
-        reason: 'restock', 
+      data: {
+        productId: product.id,
+        quantityChange: parseInt(quantity),
+        reason: 'restock',
         staffId: req.user.id,
         supplierId: supplierId ? parseInt(supplierId) : null
       }
@@ -375,7 +377,7 @@ router.get('/inventory/logs', authenticate, authorize('admin'), async (req, res)
     // Fetch product inventory logs
     const productLogs = await prisma.inventoryLog.findMany({
       where: { product: { tenantId: req.tenantId } },
-      include: { 
+      include: {
         product: { select: { name: true } },
         supplier: { select: { name: true } }
       },
@@ -395,7 +397,7 @@ router.get('/inventory/logs', authenticate, authorize('admin'), async (req, res)
 
     // Combine and sort both lists by date
     const mergedLogs = [...productLogs, ...rawLogs].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    
+
     // Take exactly 200 of the merged results
     const finalLogs = mergedLogs.slice(0, 200);
 
@@ -471,12 +473,12 @@ router.get('/settings', authenticate, authorize('admin'), async (req, res) => {
       where: { tenantId: req.tenantId }
     });
     const settingsMap = settings.reduce((acc, s) => ({ ...acc, [s.key]: s.value }), {});
-    
+
     // Include tenant branding
     const tenant = await prisma.tenant.findUnique({
       where: { id: req.tenantId }
     });
-    
+
     if (tenant) {
       settingsMap.tenant_name = tenant.name;
       settingsMap.tenant_slug = tenant.slug;
@@ -519,7 +521,7 @@ router.get('/settings', authenticate, authorize('admin'), async (req, res) => {
 router.post('/settings', authenticate, authorize('admin'), async (req, res) => {
   try {
     const { settings } = req.body; // { key: value }
-    
+
     const brandingMap = {
       tenant_name: 'name',
       tenant_logo: 'logo',
@@ -580,12 +582,12 @@ router.post('/settings', authenticate, authorize('admin'), async (req, res) => {
     }
 
     await prisma.auditLog.create({
-      data: { 
+      data: {
         tenantId: req.tenantId,
-        userId: req.user.id, 
-        action: 'update_settings', 
-        entityType: 'system', 
-        details: `Updated settings and branding: ${Object.keys(settings).join(', ')}` 
+        userId: req.user.id,
+        action: 'update_settings',
+        entityType: 'system',
+        details: `Updated settings and branding: ${Object.keys(settings).join(', ')}`
       }
     });
 
@@ -600,8 +602,8 @@ router.post('/settings', authenticate, authorize('admin'), async (req, res) => {
 router.get('/audit-logs', authenticate, authorize('admin'), async (req, res) => {
   try {
     const logs = await prisma.auditLog.findMany({
-      where: { 
-        tenantId: req.tenantId 
+      where: {
+        tenantId: req.tenantId
       },
       include: {
         user: {
@@ -668,7 +670,7 @@ router.put('/packages/:id', authenticate, authorize('admin', 'manager'), async (
   try {
     const { id } = req.params;
     const { name, description, priceText, features, icon, isPopular, isActive, image } = req.body;
-    
+
     const updateData = {
       name,
       description: description || null,
@@ -759,7 +761,7 @@ router.post('/products/:id/combo-options', authenticate, authorize('admin'), asy
 router.delete('/orders/:id', authenticate, authorize('admin'), async (req, res) => {
   try {
     const orderId = parseInt(req.params.id);
-    
+
     // Safety check: Find the order first to ensure it belongs to the tenant
     const order = await prisma.order.findUnique({
       where: { id: orderId, tenantId: req.tenantId }
@@ -778,13 +780,13 @@ router.delete('/orders/:id', authenticate, authorize('admin'), async (req, res) 
     });
 
     await prisma.auditLog.create({
-      data: { 
-        tenantId: req.tenantId, 
-        userId: req.user.id, 
-        action: 'hard_delete_order', 
-        entityType: 'order', 
-        entityId: order.orderNumber, 
-        details: `Permanently deleted Order #${order.orderNumber} (Status was: ${order.status})` 
+      data: {
+        tenantId: req.tenantId,
+        userId: req.user.id,
+        action: 'hard_delete_order',
+        entityType: 'order',
+        entityId: order.orderNumber,
+        details: `Permanently deleted Order #${order.orderNumber} (Status was: ${order.status})`
       }
     });
 

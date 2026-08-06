@@ -222,6 +222,24 @@ export default function ProductsTab() {
         });
       }
 
+      // Save any pending recipes that haven't been saved yet
+      if (productRecipes.length > 0 && savedProduct.id) {
+        const { addRecipeItem } = await import('../../services/api');
+        for (const recipe of productRecipes) {
+          if (!recipe.id && recipe.rawIngredientId && recipe.quantityUsed) {
+            try {
+              await addRecipeItem({ 
+                productId: savedProduct.id, 
+                rawIngredientId: recipe.rawIngredientId, 
+                quantityUsed: recipe.quantityUsed 
+              });
+            } catch (e) {
+              console.error('Failed to save recipe item during main save', e);
+            }
+          }
+        }
+      }
+
       setIsEditing(false);
       loadData();
       
@@ -833,8 +851,7 @@ export default function ProductsTab() {
                 </div>
 
                 {/* Group 6: Recipe / Raw Ingredients */}
-                {currentProduct.id && (
-                  <div className="bg-surface-50 p-5 rounded-2xl border border-surface-200">
+                <div className="bg-surface-50 p-5 rounded-2xl border border-surface-200">
                     <div className="flex items-center justify-between mb-4">
                       <h4 className="text-[10px] font-black uppercase tracking-widest text-surface-500 ml-1">Recipe / Raw Ingredients</h4>
                       <button 
@@ -882,7 +899,7 @@ export default function ProductsTab() {
                             />
                           </div>
 
-                          {!recipe.id ? (
+                          {!recipe.id && currentProduct.id ? (
                             <button 
                               type="button" 
                               onClick={async () => {
@@ -939,13 +956,8 @@ export default function ProductsTab() {
                           <p className="text-xs text-surface-400 font-medium">No ingredients linked. This product does not deduct raw inventory.</p>
                         </div>
                       )}
-                      
-                      {!currentProduct.id && (
-                        <p className="text-[10px] text-surface-400 font-bold uppercase py-2 text-center">Save product first before adding recipe items.</p>
-                      )}
                     </div>
                   </div>
-                )}
               </form>
             </div>
 

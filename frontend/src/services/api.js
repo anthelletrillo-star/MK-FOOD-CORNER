@@ -15,16 +15,16 @@ api.interceptors.request.use(config => {
   const hostname = window.location.hostname;
   const urlParams = new URLSearchParams(window.location.search);
   const tenantQuery = urlParams.get('tenant');
-  
+
   let tenantSlug = 'project-million'; // Default
   const isPlatformDomain = hostname.includes('vercel.app') || hostname.includes('onrender.com');
 
   if (tenantQuery) {
     tenantSlug = tenantQuery;
   } else if (!isPlatformDomain && hostname !== 'localhost' && hostname !== '127.0.0.1') {
-    tenantSlug = hostname.split('.')[0]; 
+    tenantSlug = hostname.split('.')[0];
   }
-  
+
   config.headers['x-tenant-slug'] = tenantSlug;
 
   // If we have a slug, we should let the backend resolve the ID by slug 
