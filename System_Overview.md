@@ -1,5 +1,6 @@
-# Enterprise Point of Sale (POS) System 
+# Elevate POS
 **System Architecture & Value Overview**
+*Presented by Jason Anthony Trillo, CEO*
 
 ---
 
@@ -44,3 +45,17 @@ The application prioritizes data security and seamless operations:
 *   **Encrypted Authentication:** Integration of bcrypt for secure credential hashing.
 *   **Push Notifications (Web-Push):** Keeps management instantly aware of critical events or unfulfilled orders.
 *   **Scalable Architecture:** Capable of handling peak operating hours with thousands of concurrent operations due to its non-blocking backend design.
+
+## 6. Estimated Market Valuation (Philippines)
+Pricing this customized system can be approached through several business models. Based on the enterprise-level features included (multi-tenancy, real-time sync, automated inventory), here is a realistic market valuation for the Philippines:
+
+### A. SaaS / Subscription Model (Recommended)
+Ideal for a multi-tenant setup where various cafes subscribe to use the system.
+*   **Setup / Onboarding Fee:** ₱5,000 – ₱15,000 (one-time fee).
+*   **Monthly Subscription:** ₱1,500 – ₱4,000 per location (depending on access to advanced features).
+*   **Annual Package:** ₱15,000 – ₱40,000 per year, paid upfront.
+
+### B. Perpetual License (One-Time Sale)
+Ideal for a client seeking ownership of a dedicated instance for their specific operations.
+*   **Small Businesses / Cafes (Single Branch):** ₱80,000 – ₱150,000 one-time fee.
+

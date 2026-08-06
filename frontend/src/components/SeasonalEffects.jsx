@@ -78,10 +78,10 @@ export default function SeasonalEffects({ brandingColor = '#f97316', forcedEffec
         // Magic Sparkles - glowing brand-colored orb
         return (
           <div 
-            className="rounded-full w-full h-full opacity-60 blur-[1px]"
+            className="rounded-full w-full h-full opacity-60"
             style={{ 
               backgroundColor: brandingColor, 
-              boxShadow: `0 0 10px ${brandingColor}, 0 0 20px ${brandingColor}` 
+              boxShadow: `0 0 8px ${brandingColor}` 
             }} 
           />
         );
