@@ -806,7 +806,7 @@ export default function Menu() {
                               key={sizeItem.name}
                               type="button"
                               disabled={isDisabled}
-                              onClick={() => setAddOpts(prev => ({ ...prev, size: sizeItem.name }))}
+                              onClick={() => setAddOpts(prev => ({ ...prev, size: prev.size === sizeItem.name ? null : sizeItem.name }))}
                               className={`px-4 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${isDisabled
                                   ? 'bg-surface-100 border-surface-200 text-surface-300 cursor-not-allowed line-through opacity-60'
                                   : isActive
