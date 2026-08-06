@@ -98,6 +98,7 @@ export default function Menu() {
   const [showPackages, setShowPackages] = useState(false);
   const [eventPackages, setEventPackages] = useState([]);
   const [addOpts, setAddOpts] = useState({ size: '', flavor: '', addons: [], notes: '', comboChoices: null });
+  const [optionError, setOptionError] = useState(false);
   const [comboStep, setComboStep] = useState(1); // 1 or 2
   const { addToCart, getItemCount, items, getSubtotal, clearCart } = useCart();
   const navigate = useNavigate();
@@ -208,6 +209,7 @@ export default function Menu() {
     } else {
       setAddOpts({ size: null, flavor: '', addons: [], notes: '', comboChoices: null });
     }
+    setOptionError(false);
     setSelectedProduct(product);
     window.history.pushState({ modalOpen: 'product' }, '');
   };
@@ -268,7 +270,7 @@ export default function Menu() {
   const handleAddToCart = (product) => {
     // Require option selection if product has options
     if (product.sizes && Array.isArray(product.sizes) && product.sizes.length > 0 && !addOpts.size) {
-      alert('Please choose an option first.');
+      setOptionError(true);
       return;
     }
 
@@ -795,8 +797,11 @@ export default function Menu() {
 
                   {/* Size Selector */}
                   {selectedProduct.sizes && Array.isArray(selectedProduct.sizes) && selectedProduct.sizes.length > 0 && (
-                    <div className="mb-6">
-                      <h3 className="text-xs font-black text-surface-400 uppercase tracking-widest mb-3">Choose Option</h3>
+                    <div className={`mb-6 p-1 rounded-2xl transition-all ${optionError ? 'bg-red-50 border border-red-200 p-4 animate-shake' : ''}`}>
+                      <div className="flex justify-between items-center mb-3">
+                        <h3 className={`text-xs font-black uppercase tracking-widest ${optionError ? 'text-red-600' : 'text-surface-400'}`}>Choose Option</h3>
+                        {optionError && <span className="text-[10px] font-bold text-white bg-red-500 px-2 py-0.5 rounded-full animate-pulse">Required</span>}
+                      </div>
                       <div className="flex flex-wrap gap-2">
                         {selectedProduct.sizes.map(sizeItem => {
                           const isDisabled = sizeItem.available === false;
@@ -806,7 +811,10 @@ export default function Menu() {
                               key={sizeItem.name}
                               type="button"
                               disabled={isDisabled}
-                              onClick={() => setAddOpts(prev => ({ ...prev, size: prev.size === sizeItem.name ? null : sizeItem.name }))}
+                              onClick={() => {
+                                setAddOpts(prev => ({ ...prev, size: prev.size === sizeItem.name ? null : sizeItem.name }));
+                                setOptionError(false);
+                              }}
                               className={`px-4 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${isDisabled
                                   ? 'bg-surface-100 border-surface-200 text-surface-300 cursor-not-allowed line-through opacity-60'
                                   : isActive
