@@ -437,6 +437,11 @@ function OrderCard({ order, now, onAction, processing }) {
                 <span className="font-bold text-emerald-400 mr-2">{item.quantity}×</span>
                 <span className="font-medium text-white">{item.productName}</span>
               </div>
+              {item.size && (
+                <div className="ml-6 text-xs text-emerald-200 mt-1 font-bold">
+                  {item.size}
+                </div>
+              )}
               {item.addons && (
                 <div className="ml-6 text-xs text-surface-400 mt-1">
                   + {JSON.parse(item.addons).map(a => a.name).join(', ')}

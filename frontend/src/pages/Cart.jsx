@@ -208,8 +208,11 @@ export default function Cart() {
                         </div>
                       ) : (
                         <>
+                          {item.size && (
+                            <p className="text-xs md:text-sm font-bold text-surface-600 mt-1">{item.size}</p>
+                          )}
                           {item.selectedAddons && item.selectedAddons.length > 0 && (
-                            <p className="text-xs md:text-sm font-medium mt-1" style={{ color: brandingColor }}>+ {item.selectedAddons.map(a => a.name).join(', ')}</p>
+                            <p className="text-xs md:text-sm font-medium mt-0.5" style={{ color: brandingColor }}>+ {item.selectedAddons.map(a => a.name).join(', ')}</p>
                           )}
                         </>
                       )}

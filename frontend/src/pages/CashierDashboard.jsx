@@ -575,6 +575,7 @@ export default function CashierDashboard() {
                       <div key={item.id} className="flex justify-between items-start">
                         <div>
                           <p className="font-medium text-surface-900"><span className="text-surface-500 mr-2">{item.quantity}×</span>{item.productName}</p>
+                          {item.size && <p className="text-xs font-bold text-surface-600 ml-6">{item.size}</p>}
                           {item.addons && <p className="text-xs text-surface-500 ml-6">+ {JSON.parse(item.addons).map(a => a.name).join(', ')}</p>}
                           {item.comboChoices && (
                             <p className="text-xs text-primary-500 ml-6 font-semibold">
