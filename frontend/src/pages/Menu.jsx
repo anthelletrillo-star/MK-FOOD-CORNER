@@ -796,7 +796,7 @@ export default function Menu() {
                   {/* Size Selector */}
                   {selectedProduct.sizes && Array.isArray(selectedProduct.sizes) && selectedProduct.sizes.length > 0 && (
                     <div className="mb-6">
-                      <h3 className="text-xs font-black text-surface-400 uppercase tracking-widest mb-3">Choose Size</h3>
+                      <h3 className="text-xs font-black text-surface-400 uppercase tracking-widest mb-3">Choose Option</h3>
                       <div className="flex flex-wrap gap-2">
                         {selectedProduct.sizes.map(sizeItem => {
                           const isDisabled = sizeItem.available === false;

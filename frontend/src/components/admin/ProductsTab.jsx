@@ -544,7 +544,7 @@ export default function ProductsTab() {
                 {!currentProduct.isCombo && (
                   <div className="p-5 bg-violet-50/50 rounded-2xl border border-violet-100 mt-4">
                     <div className="flex items-center justify-between mb-3">
-                      <label className="block text-[10px] font-black text-violet-500 uppercase tracking-widest ml-1">Size Variants</label>
+                      <label className="block text-[10px] font-black text-violet-500 uppercase tracking-widest ml-1">Options / Variants</label>
                       <button 
                         type="button" 
                         onClick={() => {
@@ -556,7 +556,7 @@ export default function ProductsTab() {
                         }}
                         className="text-xs bg-violet-100 text-violet-600 px-3 py-1.5 rounded-lg font-bold border border-violet-200 hover:bg-violet-200 transition-all"
                       >
-                        + Add Size
+                        + Add Option
                       </button>
                     </div>
                     
@@ -899,29 +899,8 @@ export default function ProductsTab() {
                             />
                           </div>
 
-                          {!recipe.id && currentProduct.id ? (
-                            <button 
-                              type="button" 
-                              onClick={async () => {
-                                if (!recipe.rawIngredientId || !recipe.quantityUsed) return;
-                                try {
-                                  const res = await addRecipeItem({ 
-                                    productId: currentProduct.id, 
-                                    rawIngredientId: recipe.rawIngredientId, 
-                                    quantityUsed: recipe.quantityUsed 
-                                  });
-                                  const newRecipes = [...productRecipes];
-                                  newRecipes[index] = res.data.data;
-                                  setProductRecipes(newRecipes);
-                                } catch (e) {
-                                  alert('Failed to save recipe item');
-                                }
-                              }}
-                              className="text-emerald-500 hover:text-emerald-700 bg-emerald-50 p-2 rounded-lg text-xs font-bold"
-                            >
-                              Save
-                            </button>
-                          ) : (
+                          {recipe.id ? (
+                            /* Saved recipe: show API delete button */
                             <button 
                               type="button" 
                               onClick={async () => {
@@ -936,18 +915,42 @@ export default function ProductsTab() {
                             >
                               ✕
                             </button>
-                          )}
-                          
-                          {!recipe.id && (
-                            <button 
-                              type="button" 
-                              onClick={() => {
-                                setProductRecipes(productRecipes.filter((_, i) => i !== index));
-                              }}
-                              className="text-red-400 hover:text-red-500 p-2"
-                            >
-                              ✕
-                            </button>
+                          ) : (
+                            /* Unsaved recipe: show Save (if editing existing product) + local remove */
+                            <>
+                              {currentProduct.id && (
+                                <button 
+                                  type="button" 
+                                  onClick={async () => {
+                                    if (!recipe.rawIngredientId || !recipe.quantityUsed) return;
+                                    try {
+                                      const res = await addRecipeItem({ 
+                                        productId: currentProduct.id, 
+                                        rawIngredientId: recipe.rawIngredientId, 
+                                        quantityUsed: recipe.quantityUsed 
+                                      });
+                                      const newRecipes = [...productRecipes];
+                                      newRecipes[index] = res.data.data;
+                                      setProductRecipes(newRecipes);
+                                    } catch (e) {
+                                      alert('Failed to save recipe item');
+                                    }
+                                  }}
+                                  className="text-emerald-500 hover:text-emerald-700 bg-emerald-50 p-2 rounded-lg text-xs font-bold"
+                                >
+                                  Save
+                                </button>
+                              )}
+                              <button 
+                                type="button" 
+                                onClick={() => {
+                                  setProductRecipes(productRecipes.filter((_, i) => i !== index));
+                                }}
+                                className="text-red-400 hover:text-red-500 p-2"
+                              >
+                                ✕
+                              </button>
+                            </>
                           )}
                         </div>
                       ))}
