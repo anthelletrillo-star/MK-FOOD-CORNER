@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const prisma = require('../lib/prisma');
 const fs = require('fs');
 const path = require('path');
+const sharp = require('sharp');
 
 const supabase = require('../lib/supabase');
 
@@ -19,18 +20,48 @@ router.post('/upload-image', authenticate, authorize('admin'), async (req, res) 
     if (!match) return res.status(400).json({ success: false, message: 'Invalid file format' });
 
     const type = match[1];
-    const extension = match[2];
+    const extension = match[2].toLowerCase();
     const mimeType = `${type}/${extension}`;
 
     const base64Data = image.split(';base64,').pop();
     const buffer = Buffer.from(base64Data, 'base64');
-    const fileName = `${req.tenantId || 'global'}/${Date.now()}-${name?.replace(/\s+/g, '-').toLowerCase() || 'media'}.${extension}`;
+
+    let uploadBuffer = buffer;
+    let uploadMimeType = mimeType;
+    let uploadExtension = extension;
+
+    if (type === 'image' && ['jpg', 'jpeg', 'png', 'webp'].includes(extension)) {
+      try {
+        const imageSharp = sharp(buffer);
+        const metadata = await imageSharp.metadata();
+        const maxWidth = metadata.width && metadata.width > 1200 ? 1200 : metadata.width || 1200;
+        const resizedImage = imageSharp.resize({ width: maxWidth, withoutEnlargement: true });
+
+        if (extension === 'png') {
+          uploadBuffer = await resizedImage.png({ quality: 80, compressionLevel: 9 }).toBuffer();
+          uploadMimeType = 'image/png';
+          uploadExtension = 'png';
+        } else if (extension === 'webp') {
+          uploadBuffer = await resizedImage.webp({ quality: 75 }).toBuffer();
+          uploadMimeType = 'image/webp';
+          uploadExtension = 'webp';
+        } else {
+          uploadBuffer = await resizedImage.jpeg({ quality: 75, progressive: true }).toBuffer();
+          uploadMimeType = 'image/jpeg';
+          uploadExtension = 'jpg';
+        }
+      } catch (compressError) {
+        console.warn('Image compression failed, falling back to original file:', compressError.message);
+      }
+    }
+
+    const fileName = `${req.tenantId || 'global'}/${Date.now()}-${name?.replace(/\s+/g, '-').toLowerCase() || 'media'}.${uploadExtension}`;
 
     // Upload to Supabase Storage
     const { data, error } = await supabase.storage
       .from('pos-media')
-      .upload(fileName, buffer, {
-        contentType: mimeType,
+      .upload(fileName, uploadBuffer, {
+        contentType: uploadMimeType,
         upsert: true
       });
 

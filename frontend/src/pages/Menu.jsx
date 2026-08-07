@@ -10,6 +10,32 @@ import { applyTheme, clearTheme } from '../utils/theme';
 import SeasonalEffects from '../components/SeasonalEffects';
 import { ArrowLeft, Gem, Lock, ScrollText, LogOut, Utensils, Package, Star, Flame, CheckCircle, Ban, Wheat, AlertCircle, Leaf, Info, Gift, Tag, Coffee, Store } from 'lucide-react';
 
+const DEFAULT_MENU_IMAGE = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600&auto=format&fit=crop';
+
+const getOptimizedImageUrl = (imageUrl) => {
+  if (!imageUrl) return DEFAULT_MENU_IMAGE;
+
+  const url = String(imageUrl);
+
+  if (url.startsWith('http')) {
+    if (url.includes('images.unsplash.com')) {
+      const separator = url.includes('?') ? '&' : '?';
+      return `${url}${separator}auto=format&fit=crop&w=600&q=70`;
+    }
+
+    if (url.includes('cloudinary.com')) {
+      return url.replace('/upload/', '/upload/w_600,c_fill,q_auto,f_auto/');
+    }
+
+    if (url.includes('imgix.net')) {
+      const separator = url.includes('?') ? '&' : '?';
+      return `${url}${separator}w=600&q=70&auto=format`;
+    }
+  }
+
+  return url;
+};
+
 const TRANSLATIONS = {
   en: {
     backHome: "Back Home",
@@ -515,13 +541,14 @@ export default function Menu() {
                   <button
                     key={product.id}
                     onClick={() => handleProductClick(product)}
-                    className={`glass-card text-left overflow-hidden group flex flex-row md:flex-col h-[130px] md:h-auto bg-white ${(!product.available || product.stock <= 0) ? 'opacity-75 grayscale-[0.5] cursor-not-allowed' : 'hover:scale-[1.02] active:scale-[0.98]'}`}
+                    className={`bg-white border border-surface-200/50 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 text-left overflow-hidden group flex flex-row md:flex-col h-[130px] md:h-auto ${(!product.available || product.stock <= 0) ? 'opacity-75 grayscale-[0.5] cursor-not-allowed' : 'hover:scale-[1.02] active:scale-[0.98]'}`}
                     disabled={!product.available || product.stock <= 0}
                   >
                     <div className="w-[130px] md:w-full md:h-48 flex-shrink-0 relative overflow-hidden bg-surface-100">
                       <img
                         src={product.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000&auto=format&fit=crop'}
                         className="w-full h-full object-cover absolute inset-0 md:static"
+                        loading="lazy"
                       />
                       {product.tags && (() => {
                         const allTags = product.tags.split(',');
@@ -622,9 +649,12 @@ export default function Menu() {
             {/* Modal Header Image */}
             <div className="w-full h-64 sm:h-72 md:h-80 bg-surface-50 flex items-center justify-center text-7xl relative overflow-hidden flex-shrink-0">
               <img
-                src={(selectedProduct.isCombo && addOpts.comboChoices?.[`group${comboStep}`]?.image) || selectedProduct.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000&auto=format&fit=crop'}
+                src={getOptimizedImageUrl((selectedProduct.isCombo && addOpts.comboChoices?.[`group${comboStep}`]?.image) || selectedProduct.image)}
                 className="w-full h-full object-cover relative z-10 transition-all duration-700"
                 alt={selectedProduct.name}
+                loading="lazy"
+                decoding="async"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
               {/* Back Button for Combo Step 2 */}
               {selectedProduct.isCombo && comboStep > 1 && (
@@ -719,9 +749,12 @@ export default function Menu() {
 
                               <div className="aspect-[4/3] overflow-hidden bg-surface-50">
                                 <img
-                                  src={opt.product.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1000&auto=format&fit=crop'}
+                                  src={getOptimizedImageUrl(opt.product.image)}
                                   className={`w-full h-full object-cover transition-transform duration-500 ${isSelected ? 'scale-110' : 'group-hover:scale-105'}`}
                                   alt={opt.product.name}
+                                  loading="lazy"
+                                  decoding="async"
+                                  sizes="(max-width: 768px) 100vw, 25vw"
                                 />
                               </div>
 
@@ -951,7 +984,13 @@ export default function Menu() {
 
                       <div className="relative z-10 flex gap-5 items-center mb-6">
                         <div className="relative shrink-0">
-                          <img src={product.image || 'https://via.placeholder.com/150'} className={`w-20 h-20 rounded-2xl object-cover shadow-md transition-transform group-hover:scale-105 ${!canAfford ? 'grayscale opacity-80' : ''}`} />
+                          <img
+                            src={getOptimizedImageUrl(product.image)}
+                            alt={product.name}
+                            loading="lazy"
+                            decoding="async"
+                            className={`w-20 h-20 rounded-2xl object-cover shadow-md transition-transform group-hover:scale-105 ${!canAfford ? 'grayscale opacity-80' : ''}`}
+                          />
                           {canAfford && (
                             <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500 text-white text-xs flex items-center justify-center rounded-full shadow-md border-2 border-white">✓</div>
                           )}
