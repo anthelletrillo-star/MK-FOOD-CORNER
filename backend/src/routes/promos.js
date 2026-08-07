@@ -85,6 +85,10 @@ router.post('/validate', async (req, res) => {
       discountAmount = Math.min(applicableSubtotal, promo.value);
     }
 
+    // Round to 2 decimals
+    const round2 = (n) => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
+    discountAmount = round2(discountAmount || 0);
+
     // Return the response without applying it, just so frontend can display
     res.json({
       success: true,

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getPromos, createPromo, updatePromo, deletePromo, getProducts, getCategories } from '../../services/api';
+import { getPromos, createPromo, updatePromo, deletePromo, getAdminProducts, getCategories } from '../../services/api';
 import { Tag, Plus, Trash2, Edit, AlertTriangle, CheckCircle, Percent, Banknote, Calendar, MoreVertical, X } from 'lucide-react';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 
@@ -26,7 +26,7 @@ export default function PromosTab() {
     try {
       setLoading(true);
       const [resPromos, resProds, resCats] = await Promise.all([
-        getPromos(), getProducts(), getCategories()
+        getPromos(), getAdminProducts(), getCategories()
       ]);
       setPromos(resPromos.data.data);
       setProducts(resProds.data.data);

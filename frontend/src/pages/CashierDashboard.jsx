@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { formatCurrency, formatDate, getElapsedMinutes, playNotificationSound, unlockAudio, updateAppBadge, requestNotificationPermission, showSystemNotification } from '../utils/helpers';
 import { useDynamicBranding } from '../hooks/useDynamicBranding';
 import { applyTheme, clearTheme } from '../utils/theme';
-import { Clock, AlertTriangle, Store, User, CreditCard, Gift, Banknote, Smartphone, CheckCircle, Navigation, Printer, ChefHat, ShoppingBag, Truck, MapPin, LogOut } from 'lucide-react';
+import { Clock, AlertTriangle, Store, User, CreditCard, Gift, Banknote, Smartphone, CheckCircle, Navigation, Printer, ChefHat, ShoppingBag, Truck, MapPin, LogOut, Tag } from 'lucide-react';
 
 export default function CashierDashboard() {
   const [orders, setOrders] = useState([]);
@@ -560,17 +560,37 @@ export default function CashierDashboard() {
                     <span className="text-sm font-mono font-black text-blue-700 bg-white px-3 py-1 rounded-lg border border-blue-200">{selectedOrder.paymentReference}</span>
                   </div>
                 )}
+                {/* Promo detection (notes may include "(Promo: CODE)") */}
+                {(() => {
+                  const notes = selectedOrder.notes || '';
+                  const promoMatch = notes.match(/\(Promo:\s*([^\)]+)\)/i);
+                  const promoOnly = notes.trim().match(/^\(Promo:\s*[^\)]+\)\s*$/i);
+                  return (
+                    <>
+                      {/* Promo Code Banner (separate from global notes) */}
+                      {promoMatch && (
+                        <div className="mx-6 mt-4 p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-between flex-shrink-0 animate-fade-in shadow-sm">
+                          <div className="flex items-center gap-2">
+                            <Tag className="w-4 h-4 text-emerald-600" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700">Promo Code</span>
+                          </div>
+                          <span className="text-sm font-mono font-black text-emerald-800 bg-white px-3 py-1 rounded-lg border border-emerald-200">{promoMatch[1].trim()}</span>
+                        </div>
+                      )}
 
-                {/* Global Order Note Banner */}
-                {selectedOrder.notes && (
-                  <div className="mx-6 mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 flex-shrink-0 animate-fade-in shadow-sm">
-                    <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0"><AlertTriangle className="w-5 h-5 text-amber-600" /></div>
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-amber-700 leading-none mb-1">Global Order Note</p>
-                      <p className="text-sm font-medium text-amber-900">{selectedOrder.notes}</p>
-                    </div>
-                  </div>
-                )}
+                      {/* Only show global order note when it's not just a promo marker */}
+                      {!promoOnly && selectedOrder.notes && (
+                        <div className="mx-6 mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 flex-shrink-0 animate-fade-in shadow-sm">
+                          <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0"><AlertTriangle className="w-5 h-5 text-amber-600" /></div>
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-amber-700 leading-none mb-1">Global Order Note</p>
+                            <p className="text-sm font-medium text-amber-900">{selectedOrder.notes}</p>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
 
                 {/* Points Redemption Banner */}
                 {selectedOrder.paymentMethod === 'points' && (
@@ -620,7 +640,7 @@ export default function CashierDashboard() {
                         <div className="bg-white p-4 rounded-2xl border border-surface-200 shadow-sm space-y-2">
                           <div className="flex justify-between text-sm"><span className="text-surface-500">Subtotal</span><span>{formatCurrency(calcResult.subtotal)}</span></div>
                           {selectedOrder.deliveryFee > 0 && <div className="flex justify-between text-sm text-surface-500"><span>Delivery Fee</span><span>{formatCurrency(selectedOrder.deliveryFee)}</span></div>}
-                          {calcResult.discountAmount > 0 && <div className="flex justify-between text-sm text-emerald-600"><span>Discount</span><span>-{formatCurrency(calcResult.discountAmount)}</span></div>}
+                          {calcResult.discountAmount > 0 && <div className="flex justify-between text-sm text-emerald-600"><span>Discount{selectedOrder.notes && (selectedOrder.notes.match(/\(Promo:\s*([^\)]+)\)/i) ? ` (${selectedOrder.notes.match(/\(Promo:\s*([^\)]+)\)/i)[1].trim()})` : '')}</span><span>-{formatCurrency(calcResult.discountAmount)}</span></div>}
                           {calcResult.taxAmount > 0 && <div className="flex justify-between text-sm"><span className="text-surface-500">Tax ({calcResult.taxRate}%)</span><span>{formatCurrency(calcResult.taxAmount)}</span></div>}
                           <div className="flex justify-between items-center pt-2 mt-2 border-t border-surface-100">
                             <span className="font-bold text-surface-900">Total Due</span>

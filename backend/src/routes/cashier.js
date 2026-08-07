@@ -49,6 +49,7 @@ router.post('/orders/:id/confirm', authenticate, authorize('cashier', 'admin'), 
     }
 
     currentStep = 'calculating totals';
+    const round2 = (n) => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
     const existingDiscountAmount = parseFloat(order.discountAmount) || 0;
     const effectiveDiscountType = (discountType && discountType !== '') ? discountType : (existingDiscountAmount > 0 ? (order.discountType || 'promo') : null);
     let discountAmount = 0;
@@ -66,9 +67,14 @@ router.post('/orders/:id/confirm', authenticate, authorize('cashier', 'admin'), 
     }
 
     const taxRate = parseFloat(process.env.TAX_RATE || '0.00');
-    const total = (order.subtotal + (order.deliveryFee || 0)) - discountAmount;
+    let total = (order.subtotal + (order.deliveryFee || 0)) - discountAmount;
     const taxAmount = taxRate > 0 ? ((order.subtotal - discountAmount) - ((order.subtotal - discountAmount) / (1 + taxRate))) : 0;
     const taxableAmount = total - taxAmount;
+
+    // Round monetary values
+    discountAmount = round2(discountAmount || 0);
+    const roundedTax = round2(taxAmount || 0);
+    total = round2(total || 0);
     const method = paymentMethod || order.paymentMethod;
     const isPointsRedemption = method === 'points';
     const received = isPointsRedemption ? 0 : (parseFloat(amountReceived) || total);
@@ -122,7 +128,7 @@ router.post('/orders/:id/confirm', authenticate, authorize('cashier', 'admin'), 
         paymentMethod: method,
         discountType: effectiveDiscountType || null,
         discountAmount,
-        taxAmount,
+        taxAmount: roundedTax,
         total,
         cashierId: req.user.id,
         confirmedAt: new Date(),
@@ -141,7 +147,7 @@ router.post('/orders/:id/confirm', authenticate, authorize('cashier', 'admin'), 
         paymentMethod: method,
         discountType: effectiveDiscountType || null,
         discountAmount,
-        taxAmount,
+        taxAmount: roundedTax,
         cashierId: req.user.id
       }
     });

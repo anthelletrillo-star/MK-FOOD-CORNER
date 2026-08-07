@@ -422,12 +422,27 @@ function OrderCard({ order, now, onAction, processing }) {
         </div>
       </div>
 
-      {order.notes && (
-        <div className="px-4 py-2 bg-amber-500/10 border-b border-amber-500/20 flex items-start gap-2">
-          <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-          <p className="text-xs font-bold text-amber-200"><span className="text-amber-500 uppercase text-[10px] tracking-widest mr-1">Note:</span> {order.notes}</p>
-        </div>
-      )}
+      {(() => {
+        const notes = order.notes || '';
+        const promoMatch = notes.match(/\(Promo:\s*([^\)]+)\)/i);
+        const promoOnly = notes.trim().match(/^\(Promo:\s*[^\)]+\)\s*$/i);
+        return (
+          <>
+            {promoMatch && (
+              <div className="px-4 py-2 bg-emerald-500/10 border-b border-emerald-500/20 flex items-start gap-2">
+                <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0"><Gift className="w-3 h-3 text-emerald-600" /></div>
+                <p className="text-xs font-bold text-emerald-200"><span className="text-emerald-500 uppercase text-[10px] tracking-widest mr-1">Promo</span> {promoMatch[1].trim()}</p>
+              </div>
+            )}
+            {!promoOnly && order.notes && (
+              <div className="px-4 py-2 bg-amber-500/10 border-b border-amber-500/20 flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <p className="text-xs font-bold text-amber-200"><span className="text-amber-500 uppercase text-[10px] tracking-widest mr-1">Note:</span> {order.notes}</p>
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       <div className="p-4 bg-surface-900">
         <ul className="space-y-3">
