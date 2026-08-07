@@ -39,6 +39,10 @@ function loadCart() {
   }
 }
 
+function round2(n) {
+  return Math.round((Number(n) + Number.EPSILON) * 100) / 100;
+}
+
 export function CartProvider({ children }) {
   const [state, dispatch] = useReducer(cartReducer, null, loadCart);
 
@@ -74,12 +78,15 @@ export function CartProvider({ children }) {
 
   const getItemCount = () => state.items.reduce((sum, i) => sum + i.quantity, 0);
   
-  const getSubtotal = () => state.items.reduce((sum, i) => {
-    if (i.isRedemption) return sum;
-    let itemPrice = i.price;
-    if (i.selectedAddons) i.selectedAddons.forEach(a => { itemPrice += a.price; });
-    return sum + (itemPrice * i.quantity);
-  }, 0);
+  const getSubtotal = () => {
+    const subtotal = state.items.reduce((sum, i) => {
+      if (i.isRedemption) return sum;
+      let itemPrice = i.price;
+      if (i.selectedAddons) i.selectedAddons.forEach(a => { itemPrice += a.price; });
+      return sum + (itemPrice * i.quantity);
+    }, 0);
+    return round2(subtotal);
+  };
 
   const getTotalPointsCost = () => state.items.reduce((sum, i) => {
     if (i.isRedemption && i.pointsCost) return sum + (i.pointsCost * i.quantity);

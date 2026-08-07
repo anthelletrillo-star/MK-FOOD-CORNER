@@ -113,8 +113,13 @@ export function playNotificationSound(type = 'default') {
   } catch (e) { console.warn('Audio failed:', e); }
 }
 
+export function roundMoney(amount) {
+  return Math.round((parseFloat(amount || 0) + Number.EPSILON) * 100) / 100;
+}
+
 export function formatCurrency(amount) {
-  return `₱${parseFloat(amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const value = roundMoney(amount);
+  return `₱${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export function formatDate(date) {

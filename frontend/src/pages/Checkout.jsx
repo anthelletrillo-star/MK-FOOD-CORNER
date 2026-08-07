@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { createOrder, getPublicTenant, trackVisit, validatePromo } from '../services/api';
-import { formatCurrency } from '../utils/helpers';
+import { formatCurrency, roundMoney } from '../utils/helpers';
 import { useAuth } from '../context/AuthContext';
 import { applyTheme } from '../utils/theme';
 import { Utensils, ShoppingBag, Banknote, Smartphone, CreditCard, ShoppingCart, Gem, MapPin, Hash, Truck, Download, CheckCircle, Tag } from 'lucide-react';
@@ -173,7 +173,7 @@ export default function Checkout() {
   const deliveryFee = orderType === 'delivery' ? deliveryInfo.fee : 0;
   const promoDiscount = appliedPromo ? appliedPromo.discountAmount : 0;
   const tax = 0;
-  let total = subtotal + deliveryFee - promoDiscount;
+  let total = roundMoney(subtotal + deliveryFee - promoDiscount);
   if (total < 0) total = 0;
 
   const handleApplyPromo = async () => {

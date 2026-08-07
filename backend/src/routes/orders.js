@@ -120,6 +120,7 @@ router.post('/', async (req, res) => {
         }
       }
 
+      itemSubtotal = round2(itemSubtotal);
       subtotal += itemSubtotal;
 
       orderItems.push({

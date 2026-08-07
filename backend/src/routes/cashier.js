@@ -388,33 +388,38 @@ router.post('/calculate', async (req, res) => {
   try {
     const { subtotal, deliveryFee, discountType, discountPercent, amountReceived } = req.body;
     
+    const round2 = (n) => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
+    const subtotalValue = parseFloat(subtotal) || 0;
+    const deliveryFeeValue = parseFloat(deliveryFee) || 0;
     let discountAmount = 0;
     const effectiveDiscountType = (discountType && discountType !== '') ? discountType : null;
     if (effectiveDiscountType === 'senior' || effectiveDiscountType === 'pwd') {
-      discountAmount = subtotal * 0.20;
+      discountAmount = subtotalValue * 0.20;
     } else if (effectiveDiscountType === 'promo' && discountPercent) {
-      discountAmount = subtotal * (discountPercent / 100);
+      discountAmount = subtotalValue * (discountPercent / 100);
     }
 
     const taxRate = parseFloat(process.env.TAX_RATE || '0.00');
-    const total = (parseFloat(subtotal) || 0) + (parseFloat(deliveryFee) || 0) - discountAmount;
-    const taxAmount = taxRate > 0 ? ((parseFloat(subtotal) || 0) - discountAmount) - (((parseFloat(subtotal) || 0) - discountAmount) / (1 + taxRate)) : 0;
-    const taxableAmount = total - taxAmount;
-    const change = (amountReceived || 0) - total;
+    discountAmount = round2(discountAmount);
+    const total = round2(subtotalValue + deliveryFeeValue - discountAmount);
+    const taxAmount = taxRate > 0 ? round2((subtotalValue - discountAmount) - ((subtotalValue - discountAmount) / (1 + taxRate))) : 0;
+    const taxableAmount = round2(total - taxAmount);
+    const receivedValue = parseFloat(amountReceived) || 0;
+    const change = round2(receivedValue - total);
 
     res.json({
       success: true,
       data: {
-        subtotal,
+        subtotal: round2(subtotalValue),
         discountType,
         discountAmount,
         taxableAmount,
-        taxRate: taxRate * 100,
+        taxRate: round2(taxRate * 100),
         taxAmount,
         total,
-        amountReceived: amountReceived || 0,
+        amountReceived: round2(receivedValue),
         change: Math.max(0, change),
-        isInsufficient: amountReceived ? amountReceived < total : false
+        isInsufficient: amountReceived ? receivedValue < total : false
       }
     });
   } catch (error) {
