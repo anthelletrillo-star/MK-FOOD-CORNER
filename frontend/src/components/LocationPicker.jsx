@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -34,6 +35,19 @@ function ChangeView({ center }) {
       map.setView(center, 16);
     }
   }, [center]);
+  return null;
+}
+
+// Helper to invalidate map size when container changes (e.g. fullscreen toggle)
+function MapResizer({ isFullscreen }) {
+  const map = useMap();
+  useEffect(() => {
+    // Small delay to let the DOM settle after the portal mount/unmount
+    const timeout = setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+    return () => clearTimeout(timeout);
+  }, [isFullscreen, map]);
   return null;
 }
 
@@ -218,60 +232,93 @@ export default function LocationPicker({ onLocationSelect, initialAddress = '' }
         </button>
       </div>
 
-      <div className={isFullscreen ? 'fixed inset-0 z-[300] bg-slate-950/30 p-3 sm:p-4' : 'h-64 rounded-3xl overflow-hidden border-2 border-surface-100 shadow-inner relative z-10'}>
-        <div
-          className={isFullscreen ? 'relative h-full w-full rounded-[2rem] overflow-hidden bg-white shadow-2xl' : 'relative h-full w-full cursor-pointer'}
-          onClick={() => !isFullscreen && setIsFullscreen(true)}
-        >
-          {isFullscreen && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsFullscreen(false);
-              }}
-              className="absolute right-4 top-4 z-[310] flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-lg backdrop-blur"
-              title="Exit fullscreen"
-            >
-              <Minimize2 className="h-5 w-5" />
-            </button>
-          )}
-
-          <MapContainer
-            center={[14.5995, 120.9842]} // Default to Manila
-            zoom={13}
-            style={{ height: '100%', width: '100%' }}
-            scrollWheelZoom={false}
+      {/* Non-fullscreen inline map */}
+      {!isFullscreen && (
+        <div className="h-64 rounded-3xl overflow-hidden border-2 border-surface-100 shadow-inner relative z-10">
+          <div
+            className="relative h-full w-full cursor-pointer"
+            onClick={() => setIsFullscreen(true)}
           >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://cartodb.com/attributions">CartoDB</a>'
-              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
-            />
-            <LocationMarker position={position} setPosition={setPosition} setAddress={setAddress} />
-            {position && <ChangeView center={position} />}
-          </MapContainer>
+            <MapContainer
+              center={[14.5995, 120.9842]}
+              zoom={13}
+              style={{ height: '100%', width: '100%' }}
+              scrollWheelZoom={false}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://cartodb.com/attributions">CartoDB</a>'
+                url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+              />
+              <LocationMarker position={position} setPosition={setPosition} setAddress={setAddress} />
+              {position && <ChangeView center={position} />}
+              <MapResizer isFullscreen={false} />
+            </MapContainer>
 
-          {!position && (
-            <div className="absolute inset-0 bg-slate-50/70 pointer-events-none flex items-center justify-center">
-              <div className="bg-white/95 backdrop-blur-sm px-5 py-3 rounded-full shadow-lg border border-white/20 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white animate-bounce shadow-lg shadow-red-500/20">
-                  <MapPin className="w-4 h-4" />
+            {!position && (
+              <div className="absolute inset-0 bg-slate-50/70 pointer-events-none flex items-center justify-center">
+                <div className="bg-white/95 backdrop-blur-sm px-5 py-3 rounded-full shadow-lg border border-white/20 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white animate-bounce shadow-lg shadow-red-500/20">
+                    <MapPin className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-black text-surface-800 uppercase tracking-tight">
+                    Tap map to expand and pin location
+                  </span>
                 </div>
-                <span className="text-xs font-black text-surface-800 uppercase tracking-tight">
-                  {isFullscreen ? 'Tap to pin location' : 'Tap map to expand and pin location'}
-                </span>
               </div>
-            </div>
-          )}
+            )}
 
-          {!isFullscreen && (
             <div className="absolute bottom-3 right-3 z-[20] flex items-center gap-2 rounded-full bg-white/90 px-3 py-2 shadow-lg backdrop-blur">
               <Maximize2 className="h-4 w-4 text-slate-600" />
               <span className="text-[11px] font-black uppercase tracking-tight text-slate-700">Tap to expand</span>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Fullscreen map rendered via Portal to escape stacking context */}
+      {isFullscreen && createPortal(
+        <div className="fixed inset-0 z-[9999] bg-slate-950/30 p-3 sm:p-4" style={{ zIndex: 9999 }}>
+          <div className="relative h-full w-full rounded-[2rem] overflow-hidden bg-white shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setIsFullscreen(false)}
+              className="absolute right-4 top-4 z-[10000] flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-lg backdrop-blur"
+              title="Exit fullscreen"
+            >
+              <Minimize2 className="h-5 w-5" />
+            </button>
+
+            <MapContainer
+              center={position ? [position.lat, position.lng] : [14.5995, 120.9842]}
+              zoom={position ? 16 : 13}
+              style={{ height: '100%', width: '100%' }}
+              scrollWheelZoom={true}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://cartodb.com/attributions">CartoDB</a>'
+                url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+              />
+              <LocationMarker position={position} setPosition={setPosition} setAddress={setAddress} />
+              {position && <ChangeView center={position} />}
+              <MapResizer isFullscreen={true} />
+            </MapContainer>
+
+            {!position && (
+              <div className="absolute inset-0 bg-slate-50/70 pointer-events-none flex items-center justify-center">
+                <div className="bg-white/95 backdrop-blur-sm px-5 py-3 rounded-full shadow-lg border border-white/20 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white animate-bounce shadow-lg shadow-red-500/20">
+                    <MapPin className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-black text-surface-800 uppercase tracking-tight">
+                    Tap to pin location
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>,
+        document.body
+      )}
 
       {address && (
         <div className="flex items-start gap-3 bg-emerald-50 border border-emerald-100 rounded-2xl p-4 animate-fade-in shadow-sm">
