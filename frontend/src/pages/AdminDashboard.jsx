@@ -20,7 +20,7 @@ import PromosTab from '../components/admin/PromosTab';
 import { formatCurrency } from '../utils/helpers';
 import { applyTheme, clearTheme } from '../utils/theme';
 import { useDynamicBranding } from '../hooks/useDynamicBranding';
-import { BarChart2, ShoppingBag, FolderTree, PackageSearch, Users, Truck, Package, RotateCcw, Wallet, LineChart, MessageSquare, ClipboardList, Settings, LogOut, Store, CircleDollarSign, Coins, ShoppingCart, Eye, Globe, Tag } from 'lucide-react';
+import { BarChart2, ShoppingBag, FolderTree, PackageSearch, Users, Truck, Package, RotateCcw, Wallet, LineChart, MessageSquare, ClipboardList, Settings, LogOut, Store, CircleDollarSign, Coins, ShoppingCart, Eye, Globe, Tag, Menu, X } from 'lucide-react';
 import { useSocket } from '../context/SocketContext';
 
 export default function AdminDashboard() {
@@ -36,6 +36,7 @@ export default function AdminDashboard() {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [liveVisitors, setLiveVisitors] = useState(0);
+  const [showDrawer, setShowDrawer] = useState(false);
   const { joinRoom, leaveRoom, connected, onEvent } = useSocket();
 
   // Dynamic favicon & title
@@ -154,58 +155,107 @@ export default function AdminDashboard() {
 
   return (
     <div className="h-screen bg-surface-50 flex flex-col md:flex-row overflow-hidden">
-      {/* Sidebar / Bottom Nav (Mobile) */}
-      <aside className="w-full md:w-64 bg-surface-900 text-white flex flex-col md:h-screen z-30 flex-shrink-0 order-last md:order-first border-t md:border-t-0 md:border-r border-surface-800 pb-safe">
+      {/* Sidebar - Desktop Only */}
+      <aside className="hidden md:flex w-64 bg-surface-900 text-white flex-col md:h-screen z-30 flex-shrink-0 border-r border-surface-800 pb-safe">
         {/* Desktop Only Header */}
-        <div className="hidden md:flex p-6 border-b border-surface-800 justify-between items-center">
+        <div className="flex p-6 border-b border-surface-800 justify-between items-center">
           <h1 className="font-heading text-xl font-black tracking-tight text-white flex items-center gap-2">
             {user?.tenantLogo ? (
               <img src={user.tenantLogo} className="w-8 h-8 rounded-lg object-cover" alt={user.tenantName} />
             ) : (
-              <span className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center text-sm shadow-lg shadow-primary-500/20" style={{ backgroundColor: user.tenantColor || user.tenant?.primaryColor || (user.tenantName?.toLowerCase().includes('burger') ? '#e11d48' : '#f97316') }}>POS</span>
+              <span className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center text-sm shadow-lg shadow-primary-500/20" style={{ backgroundColor: user?.tenantColor || user?.tenant?.primaryColor || (user?.tenantName?.toLowerCase().includes('burger') ? '#e11d48' : '#f97316') }}>POS</span>
             )}
             <span className="truncate">{user?.tenantName || 'ADMIN'}</span>
           </h1>
         </div>
         
-        {/* Navigation Tabs */}
-        <nav className="flex md:flex-col overflow-x-auto md:overflow-y-auto px-2 py-3 md:p-3 gap-2 md:gap-0 scrollbar-hide justify-start">
+        {/* Navigation */}
+        <nav className="flex flex-col overflow-y-auto px-3 py-3 gap-0 scrollbar-hide">
           {navGroups.map((group, gIdx) => (
-            <div key={gIdx} className="flex md:flex-col shrink-0 flex-row gap-2 md:gap-1 md:mb-6">
-              <span className="hidden md:block text-[10px] font-black text-surface-500 uppercase tracking-widest px-3 mb-1 mt-1">{group.label}</span>
+            <div key={gIdx} className="flex flex-col gap-1 mb-6">
+              <span className="block text-[10px] font-black text-surface-500 uppercase tracking-widest px-3 mb-1 mt-1">{group.label}</span>
               {group.items.map(item => (
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex-shrink-0 md:w-full flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 px-3 md:px-3 py-2 md:py-2.5 rounded-xl font-bold transition-all ${activeTab === item.id ? 'bg-primary-600/10 md:bg-primary-600 text-primary-500 md:text-white shadow-none md:shadow-lg md:shadow-primary-600/20' : 'text-surface-400 hover:text-white md:hover:bg-surface-800'}`}
+                  className={`w-full flex flex-row items-center justify-start gap-3 px-3 py-2.5 rounded-xl font-bold transition-all ${activeTab === item.id ? 'bg-primary-600/10 bg-primary-600 text-white shadow-lg shadow-primary-600/20' : 'text-surface-400 hover:text-white hover:bg-surface-800'}`}
                 >
-                  <span className="text-xl md:text-lg leading-none">{item.icon}</span>
-                  <span className="text-[10px] md:text-sm whitespace-nowrap">{item.label}</span>
+                  <span className="text-lg leading-none">{item.icon}</span>
+                  <span className="text-sm">{item.label}</span>
                 </button>
               ))}
-              {gIdx < navGroups.length - 1 && (
-                <div className="md:hidden w-px h-full bg-surface-800 mx-1 opacity-50"></div>
-              )}
             </div>
           ))}
         </nav>
+      </aside>
 
-        {/* Logout */}
-        <div className="p-3 md:p-4 border-t border-surface-800 mt-auto">
-          <button onClick={logoutUser} className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all">
-            <LogOut className="w-4 h-4" /> Log Out
+      {/* Mobile Drawer Overlay */}
+      {showDrawer && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={() => setShowDrawer(false)}
+        />
+      )}
+
+      {/* Mobile Navigation Drawer */}
+      <div className={`fixed left-0 top-0 h-full w-64 bg-surface-900 text-white flex flex-col z-50 md:hidden transform transition-transform duration-300 ease-in-out overflow-y-auto ${showDrawer ? 'translate-x-0' : '-translate-x-full'}`}>
+        {/* Mobile Drawer Header */}
+        <div className="flex p-6 border-b border-surface-800 justify-between items-center flex-shrink-0">
+          <h1 className="font-heading text-xl font-black tracking-tight text-white flex items-center gap-2">
+            {user?.tenantLogo ? (
+              <img src={user.tenantLogo} className="w-8 h-8 rounded-lg object-cover" alt={user.tenantName} />
+            ) : (
+              <span className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center text-sm shadow-lg shadow-primary-500/20" style={{ backgroundColor: user?.tenantColor || user?.tenant?.primaryColor || (user?.tenantName?.toLowerCase().includes('burger') ? '#e11d48' : '#f97316') }}>POS</span>
+            )}
+            <span className="truncate">{user?.tenantName || 'ADMIN'}</span>
+          </h1>
+          <button 
+            onClick={() => setShowDrawer(false)}
+            className="p-2 hover:bg-surface-800 rounded-lg transition-colors"
+          >
+            <X className="w-5 h-5" />
           </button>
         </div>
-      </aside>
+        
+        {/* Mobile Navigation */}
+        <nav className="flex flex-col px-3 py-3 gap-0">
+          {navGroups.map((group, gIdx) => (
+            <div key={gIdx} className="flex flex-col gap-1 mb-6">
+              <span className="text-[10px] font-black text-surface-500 uppercase tracking-widest px-3 mb-1 mt-1">{group.label}</span>
+              {group.items.map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setShowDrawer(false);
+                  }}
+                  className={`w-full flex flex-row items-center justify-start gap-3 px-3 py-2.5 rounded-xl font-bold transition-all ${activeTab === item.id ? 'bg-primary-600/10 bg-primary-600 text-white shadow-lg shadow-primary-600/20' : 'text-surface-400 hover:text-white hover:bg-surface-800'}`}
+                >
+                  <span className="text-lg leading-none">{item.icon}</span>
+                  <span className="text-sm">{item.label}</span>
+                </button>
+              ))}
+            </div>
+          ))}
+        </nav>
+      </div>
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-h-0 overflow-hidden md:h-screen">
         <header className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4 border-b border-surface-200 bg-white/80 backdrop-blur-xl flex-shrink-0">
-          <div>
-            <h2 className="font-heading text-lg md:text-xl font-black text-surface-900 leading-tight">Admin Dashboard</h2>
-            <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-[0.25em] text-surface-500 mt-1">
-              {user?.tenantName || 'Business Control Center'}
-            </p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowDrawer(!showDrawer)}
+              className="md:hidden p-2 hover:bg-surface-100 rounded-lg transition-colors text-surface-900"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            <div>
+              <h2 className="font-heading text-lg md:text-xl font-black text-surface-900 leading-tight">Admin Dashboard</h2>
+              <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-[0.25em] text-surface-500 mt-1">
+                {user?.tenantName || 'Business Control Center'}
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">

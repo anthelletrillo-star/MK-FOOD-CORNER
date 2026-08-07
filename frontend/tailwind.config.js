@@ -26,6 +26,7 @@ export default {
         'fade-in': 'fadeIn 0.5s ease forwards',
         'fade-in-up': 'fadeInUp 0.5s ease forwards',
         'slide-in': 'slideIn 0.3s ease forwards',
+        'slide-down': 'slideDown 0.4s ease forwards',
         'pulse-slow': 'pulse 3s infinite',
         'bounce-in': 'bounceIn 0.5s ease forwards',
         'glow': 'glow 2s infinite alternate',
@@ -34,6 +35,7 @@ export default {
         fadeIn: { from: { opacity: 0 }, to: { opacity: 1 } },
         fadeInUp: { from: { opacity: 0, transform: 'translateY(20px)' }, to: { opacity: 1, transform: 'translateY(0)' } },
         slideIn: { from: { opacity: 0, transform: 'translateX(-20px)' }, to: { opacity: 1, transform: 'translateX(0)' } },
+        slideDown: { from: { opacity: 0, transform: 'translateY(-20px)' }, to: { opacity: 1, transform: 'translateY(0)' } },
         bounceIn: { '0%': { transform: 'scale(0)', opacity: 0 }, '50%': { transform: 'scale(1.1)' }, '100%': { transform: 'scale(1)', opacity: 1 } },
         glow: { 
           from: { boxShadow: '0 0 5px rgb(var(--primary-500) / 0.3)' }, 

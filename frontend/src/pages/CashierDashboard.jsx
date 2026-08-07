@@ -143,11 +143,19 @@ export default function CashierDashboard() {
   const calculateTotals = async () => {
     if (!selectedOrder) return;
     try {
+      const hasExistingDiscount = Number(selectedOrder.discountAmount || 0) > 0;
+      const effectiveDiscountType = paymentData.discountType || (hasExistingDiscount ? (selectedOrder.discountType || 'promo') : '');
+      const effectiveDiscountPercent = paymentData.discountPercent || (
+        hasExistingDiscount && selectedOrder.subtotal
+          ? ((Number(selectedOrder.discountAmount || 0) / Number(selectedOrder.subtotal || 1)) * 100).toFixed(2)
+          : undefined
+      );
+
       const res = await calculatePayment({
         subtotal: selectedOrder.subtotal,
         deliveryFee: selectedOrder.deliveryFee,
-        discountType: paymentData.discountType,
-        discountPercent: paymentData.discountPercent,
+        discountType: effectiveDiscountType,
+        discountPercent: effectiveDiscountPercent,
         amountReceived: parseFloat(paymentData.received) || 0
       });
       setCalcResult(res.data.data);
@@ -170,11 +178,19 @@ export default function CashierDashboard() {
 
     setProcessing(true);
     try {
+      const hasExistingDiscount = Number(selectedOrder.discountAmount || 0) > 0;
+      const effectiveDiscountType = paymentData.discountType || (hasExistingDiscount ? (selectedOrder.discountType || 'promo') : undefined);
+      const effectiveDiscountPercent = paymentData.discountPercent || (
+        hasExistingDiscount && selectedOrder.subtotal
+          ? ((Number(selectedOrder.discountAmount || 0) / Number(selectedOrder.subtotal || 1)) * 100).toFixed(2)
+          : undefined
+      );
+
       await confirmOrder(selectedOrder.id, {
         amountReceived: parseFloat(paymentData.received) || calcResult.total,
         paymentMethod: paymentData.method,
-        discountType: paymentData.discountType || undefined,
-        discountPercent: paymentData.discountPercent ? parseFloat(paymentData.discountPercent) : undefined,
+        discountType: effectiveDiscountType,
+        discountPercent: effectiveDiscountPercent ? parseFloat(effectiveDiscountPercent) : undefined,
         referenceNumber: paymentData.referenceNumber || undefined
       });
       setSelectedOrder(null);

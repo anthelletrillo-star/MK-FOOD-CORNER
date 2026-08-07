@@ -136,7 +136,7 @@ function RiderNavMap({ riderPos, customerPos, storePos, followMode }) {
     <>
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://cartodb.com/attributions">CartoDB</a>'
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
       />
       {isValidPos(storePos) && <Marker position={storePos} icon={storeIcon}><Popup>Store</Popup></Marker>}
       {isValidPos(customerPos) && <Marker position={customerPos} icon={customerIcon}><Popup>Customer's House</Popup></Marker>}

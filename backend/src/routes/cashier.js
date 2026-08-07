@@ -49,11 +49,20 @@ router.post('/orders/:id/confirm', authenticate, authorize('cashier', 'admin'), 
     }
 
     currentStep = 'calculating totals';
+    const existingDiscountAmount = parseFloat(order.discountAmount) || 0;
+    const effectiveDiscountType = (discountType && discountType !== '') ? discountType : (existingDiscountAmount > 0 ? (order.discountType || 'promo') : null);
     let discountAmount = 0;
-    if (discountType === 'senior' || discountType === 'pwd') {
+
+    if (effectiveDiscountType === 'senior' || effectiveDiscountType === 'pwd') {
       discountAmount = order.subtotal * 0.20;
-    } else if (discountType === 'promo' && discountPercent) {
-      discountAmount = order.subtotal * (discountPercent / 100);
+    } else if (effectiveDiscountType === 'promo') {
+      if (discountPercent) {
+        discountAmount = order.subtotal * (parseFloat(discountPercent) / 100);
+      } else if (existingDiscountAmount > 0) {
+        discountAmount = existingDiscountAmount;
+      }
+    } else if (existingDiscountAmount > 0 && !discountType) {
+      discountAmount = existingDiscountAmount;
     }
 
     const taxRate = parseFloat(process.env.TAX_RATE || '0.00');
@@ -111,7 +120,7 @@ router.post('/orders/:id/confirm', authenticate, authorize('cashier', 'admin'), 
         status: 'confirmed',
         paymentStatus: 'paid',
         paymentMethod: method,
-        discountType: discountType || null,
+        discountType: effectiveDiscountType || null,
         discountAmount,
         taxAmount,
         total,
@@ -130,7 +139,7 @@ router.post('/orders/:id/confirm', authenticate, authorize('cashier', 'admin'), 
         amountReceived: received,
         changeAmount: change,
         paymentMethod: method,
-        discountType: discountType || null,
+        discountType: effectiveDiscountType || null,
         discountAmount,
         taxAmount,
         cashierId: req.user.id
@@ -374,9 +383,10 @@ router.post('/calculate', async (req, res) => {
     const { subtotal, deliveryFee, discountType, discountPercent, amountReceived } = req.body;
     
     let discountAmount = 0;
-    if (discountType === 'senior' || discountType === 'pwd') {
+    const effectiveDiscountType = (discountType && discountType !== '') ? discountType : null;
+    if (effectiveDiscountType === 'senior' || effectiveDiscountType === 'pwd') {
       discountAmount = subtotal * 0.20;
-    } else if (discountType === 'promo' && discountPercent) {
+    } else if (effectiveDiscountType === 'promo' && discountPercent) {
       discountAmount = subtotal * (discountPercent / 100);
     }
 
