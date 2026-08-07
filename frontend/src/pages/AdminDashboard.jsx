@@ -190,8 +190,8 @@ export default function AdminDashboard() {
           ))}
         </nav>
 
-        {/* Desktop Only Logout */}
-        <div className="hidden md:block p-4 border-t border-surface-800 mt-auto">
+        {/* Logout */}
+        <div className="p-3 md:p-4 border-t border-surface-800 mt-auto">
           <button onClick={logoutUser} className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all">
             <LogOut className="w-4 h-4" /> Log Out
           </button>
