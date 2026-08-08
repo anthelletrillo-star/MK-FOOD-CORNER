@@ -3,13 +3,35 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 const prisma = require('./lib/prisma');
+
+// ─── SECURITY: Allowed Origins ───────────────────────────────────────────────
+const allowedOrigins = [
+  'https://hometownbrew.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  process.env.FRONTEND_URL, // Add any extra origin via .env
+].filter(Boolean);
+
+function isOriginAllowed(origin) {
+  if (!origin) return true; // Allow server-to-server / same-origin requests
+  return allowedOrigins.some(allowed => origin.startsWith(allowed));
+}
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: (origin, callback) => callback(null, true), credentials: true, methods: ['GET', 'POST', 'PUT', 'DELETE'] }
+  cors: {
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin)) return callback(null, true);
+      callback(new Error('WebSocket origin not allowed'));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
+  }
 });
 
 // Test connection on startup
@@ -93,8 +115,34 @@ async function purgeOtherTenants() {
 
 const path = require('path');
 
-// Middleware
-app.use(cors({ origin: (origin, callback) => callback(null, true), credentials: true }));
+// ─── SECURITY: Helmet (HTTP Security Headers) ───────────────────────────────
+app.use(helmet({
+  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' }, // Required for Google Login popups
+  crossOriginEmbedderPolicy: false, // Disable to prevent COOP/COEP conflicts on localhost
+  contentSecurityPolicy: false,     // Disable CSP to avoid blocking inline scripts from frontend
+}));
+
+// ─── SECURITY: CORS (Locked to allowed origins) ─────────────────────────────
+app.use(cors({
+  origin: (origin, callback) => {
+    if (isOriginAllowed(origin)) return callback(null, true);
+    callback(new Error('CORS origin not allowed'));
+  },
+  credentials: true
+}));
+
+// ─── SECURITY: Global API Rate Limiter ───────────────────────────────────────
+// Protects ALL routes: max 100 requests per minute per IP
+const globalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many requests. Please slow down.' },
+  skip: (req) => req.path === '/api/health', // Don't rate-limit health checks
+});
+app.use('/api', globalLimiter);
+
 app.use(cookieParser());
 app.use('/api/admin/upload-image', express.json({ limit: '50mb' }));
 app.use('/api/admin/upload-image', express.urlencoded({ limit: '50mb', extended: true }));
@@ -110,13 +158,7 @@ app.set('prisma', prisma);
 app.use((req, res, next) => {
   req.io = io;
   req.prisma = prisma;
-  
-  // SECURE HEADERS FOR GOOGLE LOGIN
-  // 'same-origin-allow-popups' allows Google login popups to communicate back to your app
-  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
-  // 'unsafe-none' is sometimes needed on localhost to prevent COOP/COEP conflicts
-  res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
-  
+  // Note: COOP/COEP headers are now handled by Helmet above
   next();
 });
 
