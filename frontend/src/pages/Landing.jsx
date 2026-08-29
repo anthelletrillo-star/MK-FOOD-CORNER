@@ -207,7 +207,7 @@ export default function Landing() {
 
           <div className="splash-logo w-28 h-28 md:w-40 md:h-40 rounded-[48px] overflow-hidden ring-8 ring-white/10">
             {tenant?.logo ? (
-              <img src={tenant.logo} className="w-full h-full object-cover" alt={tenant.name} />
+              <img src={tenant.logo} className="w-full h-full object-contain p-1" alt={tenant.name} />
             ) : (
               <div className="w-full h-full bg-white/10 backdrop-blur-md flex items-center justify-center">
                 {tenant?.slug === 'burger-palace' ? <Utensils className="w-14 h-14 md:w-20 md:h-20 text-white/90" /> : <Coffee className="w-14 h-14 md:w-20 md:h-20 text-white/90" />}
@@ -313,7 +313,7 @@ export default function Landing() {
         <div className="flex justify-center mb-10">
           {tenant?.logo ? (
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-[40px] overflow-hidden shadow-2xl ring-8 ring-white/5 animate-scale-in transition-transform hover:scale-110 duration-500">
-              <img src={tenant.logo} className="w-full h-full object-cover" alt={tenant.name} />
+              <img src={tenant.logo} className="w-full h-full object-contain p-1" alt={tenant.name} />
             </div>
           ) : (
             <div className="w-24 h-24 md:w-32 md:h-32 bg-white/10 backdrop-blur-md rounded-[40px] flex items-center justify-center shadow-2xl border border-white/20 animate-scale-in ring-8 ring-white/5">

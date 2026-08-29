@@ -481,7 +481,7 @@ export default function Menu() {
               <div className="flex items-center gap-3 mb-2 md:mb-3">
                 {branding?.logo ? (
                   <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl overflow-hidden shadow-lg border-2 border-white flex-shrink-0">
-                    <img src={branding.logo} className="w-full h-full object-cover" alt={tenantName} />
+                    <img src={branding.logo} className="w-full h-full object-contain p-1" alt={tenantName} />
                   </div>
                 ) : (
                   <div className="w-10 h-10 md:w-12 md:h-12 bg-white/50 backdrop-blur-sm rounded-2xl flex items-center justify-center text-xl md:text-2xl shadow-lg border-2 border-white flex-shrink-0" style={{ color: brandingColor }}>

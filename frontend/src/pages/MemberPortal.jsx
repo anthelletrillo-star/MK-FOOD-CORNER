@@ -305,7 +305,7 @@ export default function MemberPortal() {
             <>
               <div className="text-center mb-10">
                 {tenantData?.logo ? (
-                  <img src={tenantData.logo} className="w-20 h-20 rounded-3xl object-cover mx-auto mb-6 shadow-xl shadow-primary-500/20 border-2 border-white/10" alt={tenantData.name} />
+                  <img src={tenantData.logo} className="w-20 h-20 rounded-3xl object-contain p-1 mx-auto mb-6 shadow-xl shadow-primary-500/20 border-2 border-white/10" alt={tenantData.name} />
                 ) : (
                   <div className="w-16 h-16 bg-primary-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-primary-500/20">
                     <Gem className="w-8 h-8 text-white" />
