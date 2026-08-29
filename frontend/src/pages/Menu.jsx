@@ -587,7 +587,7 @@ export default function Menu() {
                       <div className="flex items-center justify-between mt-auto">
                         <span className="font-heading font-black text-base md:text-2xl" style={{ color: brandingColor }}>
                           {product.sizes && Array.isArray(product.sizes) && product.sizes.length > 0
-                            ? `From ₱${Math.min(...product.sizes.filter(s => s.available !== false).map(s => parseFloat(s.price))).toFixed(2)}`
+                            ? `From ₱${Math.min(product.price, ...product.sizes.filter(s => s.available !== false).map(s => parseFloat(s.price))).toFixed(2)}`
                             : `₱${product.price.toFixed(2)}`
                           }
                         </span>
