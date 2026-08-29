@@ -207,7 +207,7 @@ router.post('/', async (req, res) => {
 
     // Recalculate tax based on discounted subtotal (assuming tax is after discount)
     const taxableAmount = subtotal - discountAmount;
-    const taxAmount = taxRate > 0 && taxableAmount > 0 ? (taxableAmount - (taxableAmount / (1 + taxRate))) : 0;
+    let taxAmount = taxRate > 0 && taxableAmount > 0 ? (taxableAmount - (taxableAmount / (1 + taxRate))) : 0;
 
     // Round monetary values to 2 decimals to avoid FP rounding issues
     discountAmount = round2(discountAmount || 0);
