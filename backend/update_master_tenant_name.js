@@ -18,11 +18,11 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🚀 Connecting to Database Pooler (port 6543) to update Master Tenant name...');
 
-  // Update slug: 'project-million' to Name: 'Hometown Brew'
+  // Update slug: 'project-million' to Name: 'MK FOOD CORNER'
   const tenant = await prisma.tenant.update({
     where: { slug: 'project-million' },
     data: {
-      name: 'Hometown Brew',
+      name: 'MK FOOD CORNER',
       primaryColor: '#0a3d01', // Solid brand Deep Forest Green
       secondaryColor: '#0a3d01' // Solid brand Deep Forest Green
     }

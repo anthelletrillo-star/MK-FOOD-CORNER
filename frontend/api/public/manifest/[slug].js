@@ -10,7 +10,7 @@ export default async function handler(req, res) {
 
   const apiUrl = process.env.VITE_API_URL || process.env.API_URL || 'http://localhost:5000/api';
 
-  let tenantName = 'Hometown Brew';
+  let tenantName = 'MK FOOD CORNER';
   let tenantLogo = '/hb_logo.jpg';
   let themeColor = '#0a3d01';
 

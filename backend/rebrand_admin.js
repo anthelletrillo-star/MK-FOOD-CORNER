@@ -3,14 +3,14 @@ const prisma = new PrismaClient();
 
 async function main() {
   try {
-    console.log('Replacing "Project Million Admin" with "Hometown Brew Admin"...');
+    console.log('Replacing "Project Million Admin" with "MK FOOD CORNER Admin"...');
 
     const resultUser = await prisma.user.updateMany({
       where: {
         name: 'Project Million Admin'
       },
       data: {
-        name: 'Hometown Brew Admin'
+        name: 'MK FOOD CORNER Admin'
       }
     });
     console.log(`Updated ${resultUser.count} users.`);
@@ -29,7 +29,7 @@ async function main() {
         await prisma.auditLog.update({
           where: { id: log.id },
           data: {
-            details: log.details.replace(/Project Million Admin/g, 'Hometown Brew Admin')
+            details: log.details.replace(/Project Million Admin/g, 'MK FOOD CORNER Admin')
           }
         });
         count++;

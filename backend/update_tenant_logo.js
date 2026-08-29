@@ -16,7 +16,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🚀 Connecting to Database to update Hometown Brew Logo and Favicon...');
+  console.log('🚀 Connecting to Database to update MK FOOD CORNER Logo and Favicon...');
 
   const tenant = await prisma.tenant.update({
     where: { slug: 'project-million' },

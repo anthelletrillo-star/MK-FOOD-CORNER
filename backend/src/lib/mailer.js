@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 const sendOTPEmail = async (email, otp, tenant = {}) => {
-  const { name = 'Hometown Brew', logo, primaryColor = '#f97316' } = tenant;
+  const { name = 'MK FOOD CORNER', logo, primaryColor = '#f97316' } = tenant;
 
   let absoluteLogo = logo;
   if (logo && logo.startsWith('/')) {
@@ -104,7 +104,7 @@ const sendOTPEmail = async (email, otp, tenant = {}) => {
                       <div class="footer">
                         <div class="divider"></div>
                         <p class="footer-text">This email was intended for <strong style="color: #64748b;">${email}</strong>.</p>
-                        <p class="footer-text">Powered securely by <span class="tenant-name">Hometown Brew</span> &copy; ${new Date().getFullYear()}</p>
+                        <p class="footer-text">Powered securely by <span class="tenant-name">MK FOOD CORNER</span> &copy; ${new Date().getFullYear()}</p>
                       </div>
                     </div>
                   </td>

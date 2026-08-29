@@ -22,12 +22,12 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('☕ Updating master tenant name to Hometown Brew...');
+  console.log('☕ Updating master tenant name to MK FOOD CORNER...');
 
   const tenant = await prisma.tenant.update({
     where: { slug: 'project-million' },
     data: {
-      name: 'Hometown Brew'
+      name: 'MK FOOD CORNER'
     }
   });
 

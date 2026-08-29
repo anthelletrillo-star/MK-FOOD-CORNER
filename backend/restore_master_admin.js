@@ -41,7 +41,7 @@ async function main() {
       },
       create: {
         email: adminEmail,
-        name: 'Hometown Brew Admin',
+        name: 'MK FOOD CORNER Admin',
         password: hashedPassword,
         role: 'admin',
         tenantId: tenant.id,

@@ -360,7 +360,7 @@ export default function OrderConfirmation() {
         setShowArrivalOverlay(true);
         // Display native OS notification banner (if permitted)
         import('../utils/helpers').then(({ showSystemNotification, playNotificationSound }) => {
-          showSystemNotification('Hometown Brew', `Your order #${orderNumber} has arrived!`, branding?.logoUrl || '/hb_logo.jpg');
+          showSystemNotification('MK FOOD CORNER', `Your order #${orderNumber} has arrived!`, branding?.logoUrl || '/hb_logo.jpg');
 
           // Clear any existing alert loop
           if (window._arrivalLoopInterval) clearInterval(window._arrivalLoopInterval);
@@ -677,7 +677,7 @@ export default function OrderConfirmation() {
                 <RouteLine
                   from={storeLocation}
                   to={deliveryLocation}
-                  storeName={branding?.name || 'Hometown Brew'}
+                  storeName={branding?.name || 'MK FOOD CORNER'}
                   riderLocation={riderLocation}
                 />
               </MapContainer>

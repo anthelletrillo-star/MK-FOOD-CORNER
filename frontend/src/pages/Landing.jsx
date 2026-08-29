@@ -32,9 +32,9 @@ export default function Landing() {
   const absoluteFavicon = getAbsoluteUrl(tenant?.favicon);
   const absoluteOgImage = getAbsoluteUrl(tenant?.ogImage || tenant?.logo);
 
-  useDynamicBranding(tenant?.name || 'Hometown Brew', absoluteFavicon, {
+  useDynamicBranding(tenant?.name || 'MK FOOD CORNER', absoluteFavicon, {
     image: absoluteOgImage,
-    description: `Order from ${tenant?.name || 'Hometown Brew'} — Self-Service Kiosk`
+    description: `Order from ${tenant?.name || 'MK FOOD CORNER'} — Self-Service Kiosk`
   });
 
   useEffect(() => {
@@ -115,7 +115,7 @@ export default function Landing() {
     init();
   }, [searchParams]);
 
-  const tenantName = tenant ? tenant.name : 'Hometown Brew';
+  const tenantName = tenant ? tenant.name : 'MK FOOD CORNER';
   const menuLink = '/menu';
   const queueLink = '/queue';
   const portalLink = '/member-portal';

@@ -1005,7 +1005,7 @@ export default function CashierDashboard() {
               {/* Printable Receipt */}
               <div className="print-only receipt-container">
                 <div className="receipt-header">
-                  <span className="receipt-logo">{user?.tenantName || 'Hometown Brew'}</span>
+                  <span className="receipt-logo">{user?.tenantName || 'MK FOOD CORNER'}</span>
                   <span className="receipt-subtitle">Official Receipt</span>
                 </div>
 
@@ -1097,7 +1097,7 @@ export default function CashierDashboard() {
                   </div>
                   <p style={{fontSize: '14px', fontWeight: 900}}>THANK YOU!</p>
                   <p style={{marginTop: '2mm', fontWeight: 600, fontSize: '10px'}}>PLEASE COME AGAIN</p>
-                  <p style={{marginTop: '5mm', fontWeight: 500, fontSize: '9px', opacity: 0.6}}>Powered by Hometown Brew POS</p>
+                  <p style={{marginTop: '5mm', fontWeight: 500, fontSize: '9px', opacity: 0.6}}>Powered by MK FOOD CORNER POS</p>
                   <p style={{marginTop: '1mm', fontWeight: 500, fontSize: '8px', opacity: 0.4}}>{window.location.hostname}</p>
                 </div>
               </div>

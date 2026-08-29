@@ -4,7 +4,7 @@ const path = require('path');
 const src = 'C:\\Users\\USER\\Downloads\\hb logo.jpg';
 const dest = path.join(__dirname, 'public', 'favicon.png');
 
-console.log('Copying Hometown Brew logo from Downloads...');
+console.log('Copying MK FOOD CORNER logo from Downloads...');
 try {
   if (!fs.existsSync(src)) {
     console.error(`❌ Source file not found at: ${src}`);

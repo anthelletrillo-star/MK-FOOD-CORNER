@@ -1,5 +1,5 @@
 export default function handler(req, res) {
-  const title = 'HOMETOWN BREW POS';
+  const title = 'MK FOOD CORNER POS';
   const description = 'Professional Point of Sale System';
   const image = 'https://hometownbrew.vercel.app/favicon.png';
   const siteUrl = 'https://hometownbrew.vercel.app/';
