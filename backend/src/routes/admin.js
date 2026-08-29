@@ -57,43 +57,78 @@ router.post('/upload-image', authenticate, authorize('admin'), async (req, res) 
 
     const fileName = `${req.tenantId || 'global'}/${Date.now()}-${name?.replace(/\s+/g, '-').toLowerCase() || 'media'}.${uploadExtension}`;
 
-    // Upload to Supabase Storage
-    const { data, error } = await supabase.storage
-      .from('pos-media')
-      .upload(fileName, uploadBuffer, {
-        contentType: uploadMimeType,
-        upsert: true
-      });
+    // Upload to Supabase Storage with auto bucket creation & local fallback
+    let uploadSuccess = false;
+    let publicUrl = null;
 
-    if (error) {
-      console.error('Supabase Upload Error:', error);
-      let availableBuckets = [];
-      try {
-        const { data: buckets } = await supabase.storage.listBuckets();
-        if (buckets) availableBuckets = buckets.map(b => b.name);
-      } catch (e) {
-        console.error('Failed to list buckets:', e);
+    try {
+      let { data, error } = await supabase.storage
+        .from('pos-media')
+        .upload(fileName, uploadBuffer, {
+          contentType: uploadMimeType,
+          upsert: true
+        });
+
+      // If bucket doesn't exist, attempt to create it automatically
+      if (error) {
+        console.warn('Supabase Upload failed, attempting to create "pos-media" bucket:', error.message);
+        try {
+          await supabase.storage.createBucket('pos-media', { public: true });
+          const retry = await supabase.storage
+            .from('pos-media')
+            .upload(fileName, uploadBuffer, {
+              contentType: uploadMimeType,
+              upsert: true
+            });
+          if (!retry.error) {
+            data = retry.data;
+            error = null;
+          }
+        } catch (createErr) {
+          console.warn('Could not auto-create bucket:', createErr.message);
+        }
       }
 
-      return res.status(500).json({
-        success: false,
-        message: `Storage upload failed: ${error.message || 'No bucket'}. Existing buckets: [${availableBuckets.join(', ') || 'none'}]. Please name your bucket "pos-media" or rename it.`,
-        error: error
-      });
+      if (!error && data) {
+        const { data: urlData } = supabase.storage
+          .from('pos-media')
+          .getPublicUrl(fileName);
+        if (urlData?.publicUrl) {
+          publicUrl = urlData.publicUrl;
+          uploadSuccess = true;
+        }
+      }
+    } catch (sbError) {
+      console.warn('Supabase Storage exception:', sbError.message);
     }
 
-    // Get Public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('pos-media')
-      .getPublicUrl(fileName);
+    // Fallback: Save to local filesystem if Supabase upload failed
+    if (!uploadSuccess || !publicUrl) {
+      try {
+        const uploadDir = path.join(__dirname, '../../uploads');
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        const safeBaseName = `${Date.now()}-${name?.replace(/[^a-z0-9]/gi, '-').toLowerCase() || 'media'}.${uploadExtension}`;
+        const localPath = path.join(uploadDir, safeBaseName);
+        fs.writeFileSync(localPath, uploadBuffer);
+        publicUrl = `/uploads/${safeBaseName}`;
+        console.log('✅ Fallback saved image to local disk:', publicUrl);
+      } catch (localError) {
+        console.error('Local file fallback failed:', localError);
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to upload media to both Supabase and local storage'
+        });
+      }
+    }
 
-    res.json({ success: true, url: publicUrl });
+    return res.json({ success: true, url: publicUrl });
   } catch (error) {
     console.error('Upload Error:', error);
     res.status(500).json({
       success: false,
-      message: `Failed to upload media: ${error.message}`,
-      details: error.stack
+      message: `Failed to upload media: ${error.message}`
     });
   }
 });
