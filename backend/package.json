@@ -4,6 +4,7 @@
   "description": "Enterprise POS System Backend",
   "main": "src/server.js",
   "scripts": {
+    "build": "npx prisma generate",
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
     "db:generate": "npx prisma generate",
