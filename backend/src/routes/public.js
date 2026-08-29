@@ -288,6 +288,10 @@ router.get('/tenant/:slug/packages', async (req, res) => {
     res.json({ success: true, data: packages });
   } catch (error) {
     console.error('Public Packages Error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch packages' });
+  }
+});
+
 // GET /api/public/seed — Auto-seed database if empty
 router.get('/seed', async (req, res) => {
   try {
