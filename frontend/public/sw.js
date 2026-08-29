@@ -67,8 +67,8 @@ self.addEventListener('push', function (event) {
   const title = data.title || 'New Update';
   const options = {
     body: data.body || 'Your order has been updated.',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
+    icon: '/icon-192.jpg',
+    badge: '/icon-192.jpg',
     data: data.url, // Useful for redirects on click
     requireInteraction: true,
     vibrate: [500, 200, 500]
