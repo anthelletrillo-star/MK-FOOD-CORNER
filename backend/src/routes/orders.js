@@ -60,6 +60,7 @@ router.post('/', async (req, res) => {
       exists = !!check;
     }
 
+    const round2 = (n) => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
     const orderItems = [];
     let subtotal = 0;
 
@@ -139,7 +140,6 @@ router.post('/', async (req, res) => {
     }
 
     const taxRate = parseFloat(process.env.TAX_RATE || '0.00');
-    const round2 = (n) => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
     
     // Validate Promo Code
     let discountAmount = 0;
