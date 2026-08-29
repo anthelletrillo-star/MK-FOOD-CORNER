@@ -54,7 +54,7 @@ export default function Landing() {
     if (tenant?.slug) {
       const key = `visited_${tenant.slug}`;
       if (!sessionStorage.getItem(key)) {
-        trackVisit(tenant.slug).catch(() => {});
+        trackVisit(tenant.slug).catch(() => { });
         sessionStorage.setItem(key, '1');
       }
     }
@@ -344,7 +344,7 @@ export default function Landing() {
         <p className="text-lg md:text-2xl text-surface-300 max-w-2xl mx-auto font-medium leading-relaxed mb-12">
           {tenant?.landing_description || (tenant?.slug === 'burger-palace'
             ? 'The most royal burgers in the palace. Order now and skip the wait!'
-            : 'Fresh food, fast service. Order right from this screen and enjoy your meal.')}
+            : 'Good food, Good moments.')}
         </p>
 
         {/* Action Buttons */}
@@ -357,7 +357,7 @@ export default function Landing() {
               >
                 Go to {user.role.charAt(0).toUpperCase() + user.role.slice(1)} <Rocket className="w-5 h-5 ml-1" />
               </Link>
-              
+
               <Link to={menuLink} className="w-full py-4 px-6 bg-white/5 border border-white/10 text-white hover:bg-white/10 rounded-2xl font-bold transition-all flex items-center justify-center">
                 Start New Order
               </Link>

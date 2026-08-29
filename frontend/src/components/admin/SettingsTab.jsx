@@ -40,7 +40,7 @@ export default function SettingsTab() {
         if (data.custom_badges && typeof data.custom_badges === 'string') {
           try {
             data.custom_badges = JSON.parse(data.custom_badges);
-          } catch(e) {
+          } catch (e) {
             data.custom_badges = [];
           }
         }
@@ -196,36 +196,36 @@ export default function SettingsTab() {
           </div>
           <div className="p-8 space-y-6">
             {isSuper && (
-                <div>
-                  <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Display Store Name</label>
-                  <input 
-                    type="text" 
-                    value={settings.tenant_name || ''} 
-                    onChange={e => setSettings({...settings, tenant_name: e.target.value})}
-                    className="input-field w-full py-4 text-xl font-black" 
-                    placeholder="e.g. BURGER PALACE"
-                  />
-                </div>
+              <div>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Display Store Name</label>
+                <input
+                  type="text"
+                  value={settings.tenant_name || ''}
+                  onChange={e => setSettings({ ...settings, tenant_name: e.target.value })}
+                  className="input-field w-full py-4 text-xl font-black"
+                  placeholder="e.g. BURGER PALACE"
+                />
+              </div>
             )}
             <div>
               <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Store Logo</label>
               <div className="flex flex-col xl:flex-row gap-4">
                 <div className="flex-1 flex gap-2">
-                  <input 
-                    type="text" 
-                    value={settings.tenant_logo || ''} 
-                    onChange={e => setSettings({...settings, tenant_logo: e.target.value})}
-                    className="input-field flex-1 py-3 text-sm" 
+                  <input
+                    type="text"
+                    value={settings.tenant_logo || ''}
+                    onChange={e => setSettings({ ...settings, tenant_logo: e.target.value })}
+                    className="input-field flex-1 py-3 text-sm"
                     placeholder="https://example.com/logo.png"
                   />
-                  <button 
+                  <button
                     type="button"
                     onClick={() => document.getElementById('logoUpload').click()}
                     className="px-4 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all text-xs font-bold whitespace-nowrap flex items-center gap-2"
                   >
                     <Upload className="w-4 h-4" /> Upload
                   </button>
-                  <input 
+                  <input
                     type="file" id="logoUpload" accept="image/*" className="hidden"
                     onChange={async (e) => {
                       const file = e.target.files[0];
@@ -265,9 +265,9 @@ export default function SettingsTab() {
           <div className="p-8 space-y-6">
             <div>
               <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Kiosk Ambient Visual Effect</label>
-              <select 
-                value={settings.seasonal_effect || 'auto'} 
-                onChange={e => setSettings({...settings, seasonal_effect: e.target.value})}
+              <select
+                value={settings.seasonal_effect || 'auto'}
+                onChange={e => setSettings({ ...settings, seasonal_effect: e.target.value })}
                 className="input-field w-full py-4 text-sm bg-white cursor-pointer"
               >
                 <option value="auto">Auto (Follow Calendar Holidays Automatically)</option>
@@ -286,11 +286,11 @@ export default function SettingsTab() {
 
             <div>
               <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Landing Page Tagline</label>
-              <textarea 
-                value={settings.landing_description || ''} 
-                onChange={e => setSettings({...settings, landing_description: e.target.value})}
-                className="input-field w-full py-4 px-5 text-sm min-h-[100px] resize-none leading-relaxed" 
-                placeholder="e.g. Fresh food, fast service. Order right from this screen and enjoy your meal."
+              <textarea
+                value={settings.landing_description || ''}
+                onChange={e => setSettings({ ...settings, landing_description: e.target.value })}
+                className="input-field w-full py-4 px-5 text-sm min-h-[100px] resize-none leading-relaxed"
+                placeholder="e.g. Good food, Good moments"
               />
               <p className="text-[10px] text-slate-400 mt-2 italic font-medium">This text appears on the main landing page to greet your customers.</p>
             </div>
@@ -301,28 +301,28 @@ export default function SettingsTab() {
                 {(settings.tenant_assets || []).map((asset, idx) => (
                   <div key={idx} className="flex gap-4 items-center bg-slate-50 p-4 rounded-2xl border border-slate-200">
                     <div className="w-16 h-16 rounded-xl border border-slate-300 overflow-hidden bg-black flex-shrink-0">
-                        {asset.match(/\.(mp4|webm|mov|ogg)$/i) ? (
-                          <div className="w-full h-full flex items-center justify-center text-white text-[8px] font-black uppercase">VIDEO</div>
-                        ) : (
-                          <img src={asset.startsWith('http') || asset.startsWith('data:') ? asset : `${import.meta.env.VITE_API_URL?.replace('/api', '')}${asset}`} className="w-full h-full object-cover" alt="" />
-                        )}
+                      {asset.match(/\.(mp4|webm|mov|ogg)$/i) ? (
+                        <div className="w-full h-full flex items-center justify-center text-white text-[8px] font-black uppercase">VIDEO</div>
+                      ) : (
+                        <img src={asset.startsWith('http') || asset.startsWith('data:') ? asset : `${import.meta.env.VITE_API_URL?.replace('/api', '')}${asset}`} className="w-full h-full object-cover" alt="" />
+                      )}
                     </div>
-                    <input 
-                      type="text" 
-                      value={asset} 
+                    <input
+                      type="text"
+                      value={asset}
                       onChange={e => {
                         const newAssets = [...settings.tenant_assets];
                         newAssets[idx] = e.target.value;
-                        setSettings({...settings, tenant_assets: newAssets});
+                        setSettings({ ...settings, tenant_assets: newAssets });
                       }}
-                      className="input-field flex-1 py-3 text-xs" 
+                      className="input-field flex-1 py-3 text-xs"
                       placeholder="Image or Video URL (.mp4 supported)"
                     />
-                    <button 
+                    <button
                       type="button"
                       onClick={() => {
                         const newAssets = settings.tenant_assets.filter((_, i) => i !== idx);
-                        setSettings({...settings, tenant_assets: newAssets});
+                        setSettings({ ...settings, tenant_assets: newAssets });
                       }}
                       className="w-10 h-10 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all font-black flex items-center justify-center"
                     >
@@ -331,36 +331,36 @@ export default function SettingsTab() {
                   </div>
                 ))}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <button 
+                  <button
                     type="button"
                     onClick={() => document.getElementById('bgMediaUpload').click()}
                     className="py-4 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest"
                   >
                     <Upload className="w-4 h-4" /> Choose File
                   </button>
-                  <button 
+                  <button
                     type="button"
-                    onClick={() => setSettings({...settings, tenant_assets: [...(settings.tenant_assets || []), '']})}
+                    onClick={() => setSettings({ ...settings, tenant_assets: [...(settings.tenant_assets || []), ''] })}
                     className="py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-black uppercase tracking-widest text-[10px] hover:border-primary-400 hover:text-primary-500 transition-all flex items-center justify-center gap-2"
                   >
                     <Plus className="w-5 h-5" /> Add URL
                   </button>
-                  <input 
-                    type="file" 
-                    id="bgMediaUpload" 
-                    accept="image/*,video/*" 
-                    className="hidden" 
+                  <input
+                    type="file"
+                    id="bgMediaUpload"
+                    accept="image/*,video/*"
+                    className="hidden"
                     onChange={async (e) => {
                       const file = e.target.files[0];
                       if (!file) return;
                       const reader = new FileReader();
                       reader.onloadend = async () => {
                         setMessage('Uploading...');
-                          try {
-                            const res = await uploadImage({ image: reader.result, name: 'landing-bg' });
-                            setSettings(prev => ({ ...prev, tenant_assets: [...(prev.tenant_assets || []), res.data.url] }));
-                            setMessage('Media uploaded!');
-                          } catch (error) { alert('Upload failed'); }
+                        try {
+                          const res = await uploadImage({ image: reader.result, name: 'landing-bg' });
+                          setSettings(prev => ({ ...prev, tenant_assets: [...(prev.tenant_assets || []), res.data.url] }));
+                          setMessage('Media uploaded!');
+                        } catch (error) { alert('Upload failed'); }
                       };
                       reader.readAsDataURL(file);
                     }}
@@ -386,30 +386,30 @@ export default function SettingsTab() {
               <div className="flex items-center justify-between mb-4">
                 <p className="text-[10px] font-black uppercase tracking-widest text-surface-500">Shop Pin (Coordinates)</p>
                 <div className="flex gap-2">
-                   <span className="text-[10px] font-bold bg-white border border-surface-200 px-2 py-1 rounded text-surface-600">Lat: {Number(settings.storeLat || 0).toFixed(4)}</span>
-                   <span className="text-[10px] font-bold bg-white border border-surface-200 px-2 py-1 rounded text-surface-600">Lng: {Number(settings.storeLng || 0).toFixed(4)}</span>
+                  <span className="text-[10px] font-bold bg-white border border-surface-200 px-2 py-1 rounded text-surface-600">Lat: {Number(settings.storeLat || 0).toFixed(4)}</span>
+                  <span className="text-[10px] font-bold bg-white border border-surface-200 px-2 py-1 rounded text-surface-600">Lng: {Number(settings.storeLng || 0).toFixed(4)}</span>
                 </div>
               </div>
-              
+
               <div className="h-[300px] rounded-xl overflow-hidden border-2 border-surface-100 relative z-0">
-                <LocationPicker 
+                <LocationPicker
                   onLocationSelect={(loc) => {
                     setSettings(prev => ({ ...prev, storeLat: loc.lat, storeLng: loc.lng }));
                   }}
                   initialAddress=""
                 />
               </div>
-              
+
               <div className="mt-8 pt-6 border-t border-surface-100">
                 <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Delivery Fee Pricing</label>
                 <div className="flex items-center gap-4">
                   <div className="relative flex-1">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₱</span>
-                    <input 
-                      type="number" 
-                      value={settings.deliveryFeePerKm ?? ''} 
-                      onChange={e => setSettings({...settings, deliveryFeePerKm: e.target.value})}
-                      className="input-field w-full pl-8 py-4 text-xl font-black font-heading" 
+                    <input
+                      type="number"
+                      value={settings.deliveryFeePerKm ?? ''}
+                      onChange={e => setSettings({ ...settings, deliveryFeePerKm: e.target.value })}
+                      className="input-field w-full pl-8 py-4 text-xl font-black font-heading"
                       placeholder="20"
                     />
                   </div>
@@ -436,21 +436,21 @@ export default function SettingsTab() {
               <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">GCash QR Code</label>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 flex gap-2">
-                  <input 
-                    type="text" 
-                    value={settings.gcash_qr || ''} 
-                    onChange={e => setSettings({...settings, gcash_qr: e.target.value})}
-                    className="input-field flex-1 py-3 text-sm" 
+                  <input
+                    type="text"
+                    value={settings.gcash_qr || ''}
+                    onChange={e => setSettings({ ...settings, gcash_qr: e.target.value })}
+                    className="input-field flex-1 py-3 text-sm"
                     placeholder="https://example.com/gcash-qr.png"
                   />
-                  <button 
+                  <button
                     type="button"
                     onClick={() => document.getElementById('gcashQrUpload').click()}
                     className="px-4 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all text-xs font-bold flex items-center gap-2"
                   >
                     <Upload className="w-4 h-4" /> Upload
                   </button>
-                  <input 
+                  <input
                     type="file" id="gcashQrUpload" accept="image/*" className="hidden"
                     onChange={async (e) => {
                       const file = e.target.files[0];
@@ -481,21 +481,21 @@ export default function SettingsTab() {
               <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Maya QR Code</label>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 flex gap-2">
-                  <input 
-                    type="text" 
-                    value={settings.maya_qr || ''} 
-                    onChange={e => setSettings({...settings, maya_qr: e.target.value})}
-                    className="input-field flex-1 py-3 text-sm" 
+                  <input
+                    type="text"
+                    value={settings.maya_qr || ''}
+                    onChange={e => setSettings({ ...settings, maya_qr: e.target.value })}
+                    className="input-field flex-1 py-3 text-sm"
                     placeholder="https://example.com/maya-qr.png"
                   />
-                  <button 
+                  <button
                     type="button"
                     onClick={() => document.getElementById('mayaQrUpload').click()}
                     className="px-4 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all text-xs font-bold flex items-center gap-2"
                   >
                     <Upload className="w-4 h-4" /> Upload
                   </button>
-                  <input 
+                  <input
                     type="file" id="mayaQrUpload" accept="image/*" className="hidden"
                     onChange={async (e) => {
                       const file = e.target.files[0];
@@ -536,8 +536,8 @@ export default function SettingsTab() {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">Custom Dietary Badges</label>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => {
                     const newBadges = [...(settings.custom_badges || [])];
                     newBadges.push({ id: 'custom_' + Date.now(), label: '', color: 'text-rose-700 bg-rose-50 border-rose-300' });
@@ -553,10 +553,10 @@ export default function SettingsTab() {
                 {(settings.custom_badges || []).map((badge, idx) => (
                   <div key={badge.id} className="flex flex-col sm:flex-row gap-4 sm:items-center bg-surface-50 p-4 rounded-2xl border border-surface-200 animate-fade-in">
                     <div className="flex-1 w-full">
-                      <input 
-                        type="text" 
-                        placeholder="Badge Label (e.g. Dairy-Free)" 
-                        value={badge.label} 
+                      <input
+                        type="text"
+                        placeholder="Badge Label (e.g. Dairy-Free)"
+                        value={badge.label}
                         onChange={(e) => {
                           const newBadges = [...settings.custom_badges];
                           newBadges[idx].label = e.target.value;
@@ -566,7 +566,7 @@ export default function SettingsTab() {
                       />
                     </div>
                     <div className="flex-1 w-full">
-                      <select 
+                      <select
                         value={badge.color}
                         onChange={(e) => {
                           const newBadges = [...settings.custom_badges];
@@ -587,7 +587,7 @@ export default function SettingsTab() {
                         <option value="text-yellow-800 bg-yellow-50 border-yellow-300">Yellow</option>
                       </select>
                     </div>
-                    
+
                     <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
                       {/* Badge Preview */}
                       <div className="flex-1 sm:w-32 flex justify-start sm:justify-center">
@@ -598,8 +598,8 @@ export default function SettingsTab() {
                         )}
                       </div>
 
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => {
                           const newBadges = settings.custom_badges.filter((_, i) => i !== idx);
                           setSettings({ ...settings, custom_badges: newBadges });
@@ -643,12 +643,12 @@ export default function SettingsTab() {
               <div className="flex items-center gap-4">
                 <div className="relative flex-1">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₱</span>
-                  <input 
-                    type="number" 
-                    value={settings.points_rate} 
-                    onChange={e => setSettings({...settings, points_rate: e.target.value})}
+                  <input
+                    type="number"
+                    value={settings.points_rate}
+                    onChange={e => setSettings({ ...settings, points_rate: e.target.value })}
                     disabled={settings.saRewardsDisabled}
-                    className={`input-field w-full pl-8 py-4 text-xl font-black font-heading ${settings.saRewardsDisabled ? 'opacity-50 cursor-not-allowed bg-slate-100' : ''}`} 
+                    className={`input-field w-full pl-8 py-4 text-xl font-black font-heading ${settings.saRewardsDisabled ? 'opacity-50 cursor-not-allowed bg-slate-100' : ''}`}
                     placeholder="100"
                   />
                 </div>
@@ -658,7 +658,7 @@ export default function SettingsTab() {
                 </div>
               </div>
               <p className="mt-4 text-sm text-slate-500 leading-relaxed font-medium">
-                Set how many Pesos a customer must spend to earn **1 Loyalty Point**. 
+                Set how many Pesos a customer must spend to earn **1 Loyalty Point**.
                 <br />
                 <span className="text-emerald-600 font-bold italic">Example: Set to 50 to give 1 point for every ₱50 spent.</span>
               </p>
@@ -667,8 +667,8 @@ export default function SettingsTab() {
         </div>
 
         <div className="flex justify-end pt-4">
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={saving}
             className="btn-primary px-12 py-5 text-lg font-black uppercase tracking-widest rounded-[24px] shadow-2xl shadow-primary-500/30"
           >
