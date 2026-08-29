@@ -211,7 +211,7 @@ export default function SuperAdminDashboard() {
                     <td className="p-6">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-lg border border-white/10" style={{ backgroundColor: tenant.primaryColor }}>
-                          {tenant.logo ? <img src={tenant.logo} className="w-full h-full object-cover rounded-2xl" alt="" /> : tenant.name.charAt(0)}
+                          {tenant.logo ? <img src={tenant.logo} className="w-full h-full object-contain rounded-2xl" alt="" /> : tenant.name.charAt(0)}
                         </div>
                         <div>
                           <p className="font-black text-white text-base">{tenant.name}</p>

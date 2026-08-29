@@ -436,7 +436,7 @@ export default function CashierDashboard() {
       <header className="bg-white border-b border-surface-200 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between flex-shrink-0 z-10 no-print">
         <div className="flex items-center gap-2 sm:gap-4 min-w-0">
           {user?.tenantLogo ? (
-            <img src={user.tenantLogo} className="w-8 h-8 rounded-lg object-cover shadow-sm" alt={user.tenantName} />
+            <img src={user.tenantLogo} className="w-8 h-8 rounded-lg object-contain shadow-sm" alt={user.tenantName} />
           ) : (
             <div className="w-8 h-8 bg-primary-50 rounded-lg flex items-center justify-center text-primary-500 shadow-inner"><Store className="w-4 h-4" /></div>
           )}

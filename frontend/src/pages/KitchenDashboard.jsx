@@ -200,7 +200,7 @@ export default function KitchenDashboard() {
       <header className="bg-surface-900 border-b border-surface-800 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between flex-shrink-0 z-10">
         <div className="flex items-center gap-2 sm:gap-4 min-w-0">
           {user?.tenantLogo ? (
-            <img src={user.tenantLogo} className="w-8 h-8 rounded-lg object-cover shadow-sm" alt={user.tenantName} />
+            <img src={user.tenantLogo} className="w-8 h-8 rounded-lg object-contain shadow-sm" alt={user.tenantName} />
           ) : (
             <div className="w-8 h-8 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500 shadow-inner"><ChefHat className="w-4 h-4" /></div>
           )}

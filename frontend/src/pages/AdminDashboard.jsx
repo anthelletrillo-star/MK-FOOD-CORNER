@@ -203,7 +203,7 @@ export default function AdminDashboard() {
         <div className="flex p-6 border-b border-surface-800 justify-between items-center flex-shrink-0">
           <h1 className="font-heading text-xl font-black tracking-tight text-white flex items-center gap-2">
             {user?.tenantLogo ? (
-              <img src={user.tenantLogo} className="w-8 h-8 rounded-lg object-cover" alt={user.tenantName} />
+              <img src={user.tenantLogo} className="w-8 h-8 rounded-lg object-contain" alt={user.tenantName} />
             ) : (
               <span className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center text-sm shadow-lg shadow-primary-500/20" style={{ backgroundColor: user?.tenantColor || user?.tenant?.primaryColor || (user?.tenantName?.toLowerCase().includes('burger') ? '#e11d48' : '#f97316') }}>POS</span>
             )}
