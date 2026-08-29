@@ -10,7 +10,8 @@ const prisma = require('./lib/prisma');
 
 // ─── SECURITY: Allowed Origins ───────────────────────────────────────────────
 const allowedOrigins = [
-  'https://hometownbrew.vercel.app',
+  'https://mk-food-corner-six.vercel.app',
+  'https://mk-food-corner.vercel.app',
   'http://localhost:5173',
   'http://localhost:5174',
   process.env.FRONTEND_URL, // Add any extra origin via .env
