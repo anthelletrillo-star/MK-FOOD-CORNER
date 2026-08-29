@@ -37,7 +37,7 @@ export default function SplashScreen({ children }) {
         <img
           src="/favicon.png"
           alt="MK FOOD CORNER"
-          className="relative w-32 h-32 rounded-3xl animate-bounce shadow-2xl object-cover"
+          className="relative w-32 h-32 rounded-3xl animate-bounce shadow-2xl object-contain bg-white/10 p-3 backdrop-blur-md border border-white/20"
         />
       </div>
       

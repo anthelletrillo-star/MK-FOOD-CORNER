@@ -140,7 +140,7 @@ export default function AdminDashboard() {
 
   if (loading && !summary) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#0a3d01] gap-6">
-      <img src="/favicon.png" alt="MK FOOD CORNER" className="w-24 h-24 rounded-3xl animate-pulse shadow-[0_0_60px_rgba(255,255,255,0.15)]" />
+      <img src="/favicon.png" alt="MK FOOD CORNER" className="w-24 h-24 rounded-3xl animate-pulse shadow-[0_0_60px_rgba(255,255,255,0.15)] object-contain bg-white/10 p-2" />
       <div className="text-center">
         <h1 className="text-white text-[22px] font-black tracking-tight font-heading">MK FOOD CORNER</h1>
         <p className="text-white/50 text-[11px] font-semibold tracking-[3px] uppercase mt-1.5">Bringing home closer</p>
@@ -161,7 +161,7 @@ export default function AdminDashboard() {
         <div className="flex p-6 border-b border-surface-800 justify-between items-center">
           <h1 className="font-heading text-xl font-black tracking-tight text-white flex items-center gap-2">
             {user?.tenantLogo ? (
-              <img src={user.tenantLogo} className="w-8 h-8 rounded-lg object-cover" alt={user.tenantName} />
+              <img src={user.tenantLogo} className="w-8 h-8 rounded-lg object-contain bg-white/10 p-0.5" alt={user.tenantName} />
             ) : (
               <span className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center text-sm shadow-lg shadow-primary-500/20" style={{ backgroundColor: user?.tenantColor || user?.tenant?.primaryColor || (user?.tenantName?.toLowerCase().includes('burger') ? '#e11d48' : '#f97316') }}>POS</span>
             )}
