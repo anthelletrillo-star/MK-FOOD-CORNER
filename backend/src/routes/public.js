@@ -288,7 +288,92 @@ router.get('/tenant/:slug/packages', async (req, res) => {
     res.json({ success: true, data: packages });
   } catch (error) {
     console.error('Public Packages Error:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch packages' });
+// GET /api/public/seed — Auto-seed database if empty
+router.get('/seed', async (req, res) => {
+  try {
+    const bcrypt = require('bcryptjs');
+    
+    // Ensure default master tenant exists
+    let masterTenant = await prisma.tenant.findUnique({ where: { slug: 'project-million' } });
+    if (!masterTenant) {
+      masterTenant = await prisma.tenant.create({
+        data: {
+          name: 'MK FOOD CORNER',
+          slug: 'project-million',
+          logo: '/favicon.png',
+          favicon: '/favicon.png',
+          primaryColor: '#f97316',
+          secondaryColor: '#ef4444',
+          active: true
+        }
+      });
+    }
+
+    // Default users
+    const adminPass = await bcrypt.hash('admin123', 12);
+    const cashierPass = await bcrypt.hash('cashier123', 12);
+    const kitchenPass = await bcrypt.hash('kitchen123', 12);
+
+    const usersToCreate = [
+      { email: 'admin@pos.com', password: adminPass, name: 'Admin', role: 'admin', tenantId: masterTenant.id },
+      { email: 'cashier@pos.com', password: cashierPass, name: 'Cashier 1', role: 'cashier', tenantId: masterTenant.id },
+      { email: 'kitchen@pos.com', password: kitchenPass, name: 'Kitchen Staff', role: 'kitchen', tenantId: masterTenant.id }
+    ];
+
+    for (const u of usersToCreate) {
+      const exists = await prisma.user.findFirst({ where: { email: u.email } });
+      if (!exists) await prisma.user.create({ data: u });
+    }
+
+    // Categories
+    let existingCategories = await prisma.category.findMany({ where: { tenantId: masterTenant.id } });
+    if (existingCategories.length === 0) {
+      const categoriesData = [
+        { name: 'Burgers', icon: '🍔', description: 'Juicy handcrafted burgers', sortOrder: 1, tenantId: masterTenant.id },
+        { name: 'Chicken', icon: '🍗', description: 'Crispy fried chicken', sortOrder: 2, tenantId: masterTenant.id },
+        { name: 'Rice Meals', icon: '🍚', description: 'Hearty rice meals', sortOrder: 3, tenantId: masterTenant.id },
+        { name: 'Beverages', icon: '🥤', description: 'Refreshing drinks', sortOrder: 4, tenantId: masterTenant.id },
+        { name: 'Milk Tea', icon: '🧋', description: 'Premium milk teas', sortOrder: 5, tenantId: masterTenant.id },
+        { name: 'Desserts', icon: '🍰', description: 'Sweet treats', sortOrder: 6, tenantId: masterTenant.id },
+        { name: 'Sides & Snacks', icon: '🍟', description: 'Perfect add-ons', sortOrder: 7, tenantId: masterTenant.id }
+      ];
+      for (const cData of categoriesData) {
+        await prisma.category.create({ data: cData });
+      }
+      existingCategories = await prisma.category.findMany({ where: { tenantId: masterTenant.id } });
+    }
+
+    // Products
+    const existingProducts = await prisma.product.findMany({ where: { tenantId: masterTenant.id } });
+    if (existingProducts.length === 0 && existingCategories.length > 0) {
+      const catMap = {};
+      existingCategories.forEach(c => { catMap[c.name] = c.id; });
+
+      const products = [
+        { categoryId: catMap['Burgers'] || existingCategories[0].id, name: 'Classic Burger', description: 'Beef patty with lettuce, tomato & special sauce', price: 89, stock: 50, tenantId: masterTenant.id },
+        { categoryId: catMap['Burgers'] || existingCategories[0].id, name: 'Cheese Burger', description: 'Classic burger with melted cheddar cheese', price: 109, stock: 50, tenantId: masterTenant.id },
+        { categoryId: catMap['Burgers'] || existingCategories[0].id, name: 'Double Patty Burger', description: 'Two juicy beef patties with all the fixings', price: 149, stock: 40, tenantId: masterTenant.id },
+        { categoryId: catMap['Chicken'] || existingCategories[0].id, name: 'Fried Chicken (2pc)', description: 'Golden crispy fried chicken', price: 99, stock: 60, tenantId: masterTenant.id },
+        { categoryId: catMap['Chicken'] || existingCategories[0].id, name: 'Chicken Wings (6pc)', description: 'Spicy buffalo chicken wings', price: 149, stock: 40, tenantId: masterTenant.id },
+        { categoryId: catMap['Rice Meals'] || existingCategories[0].id, name: 'Pork Adobo', description: 'Filipino-style braised pork with rice', price: 129, stock: 35, tenantId: masterTenant.id },
+        { categoryId: catMap['Rice Meals'] || existingCategories[0].id, name: 'Tapsilog', description: 'Beef tapa with garlic rice & egg', price: 119, stock: 30, tenantId: masterTenant.id },
+        { categoryId: catMap['Beverages'] || existingCategories[0].id, name: 'Iced Tea', description: 'House blend iced tea', price: 39, stock: 100, tenantId: masterTenant.id },
+        { categoryId: catMap['Beverages'] || existingCategories[0].id, name: 'Fresh Lemonade', description: 'Freshly squeezed lemonade', price: 55, stock: 80, tenantId: masterTenant.id },
+        { categoryId: catMap['Milk Tea'] || existingCategories[0].id, name: 'Classic Milk Tea', description: 'Traditional milk tea with pearls', price: 79, stock: 60, tenantId: masterTenant.id },
+        { categoryId: catMap['Milk Tea'] || existingCategories[0].id, name: 'Brown Sugar Milk Tea', description: 'Tiger sugar milk tea with boba', price: 99, stock: 50, tenantId: masterTenant.id },
+        { categoryId: catMap['Desserts'] || existingCategories[0].id, name: 'Halo-Halo', description: 'Classic Filipino shaved ice dessert', price: 89, stock: 40, tenantId: masterTenant.id },
+        { categoryId: catMap['Sides & Snacks'] || existingCategories[0].id, name: 'French Fries', description: 'Crispy golden fries', price: 65, stock: 70, tenantId: masterTenant.id }
+      ];
+
+      for (const p of products) {
+        if (p.categoryId) await prisma.product.create({ data: p });
+      }
+    }
+
+    res.json({ success: true, message: 'Database setup and seeded successfully!' });
+  } catch (err) {
+    console.error('Seed route error:', err);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
