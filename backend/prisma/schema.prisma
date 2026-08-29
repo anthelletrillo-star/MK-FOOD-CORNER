@@ -191,6 +191,9 @@ model Order {
   payments      Payment[]
   notifications Notification[]
   pushSubscriptions PushSubscription[]
+
+  @@index([tenantId, createdAt])
+  @@index([status])
 }
 
 model OrderItem {
@@ -318,6 +321,8 @@ model Expense {
   createdAt   DateTime @default(now())
 
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, date])
 }
 
 model BetaApplication {

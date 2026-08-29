@@ -8,6 +8,14 @@ const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 const prisma = require('./lib/prisma');
 
+// ─── GLOBAL ERROR HANDLERS FOR PROCESS STABILITY ─────────────
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
 // ─── SECURITY: Allowed Origins ───────────────────────────────────────────────
 const allowedOrigins = [
   'https://mkfoodcrner.vercel.app',
@@ -33,7 +41,10 @@ const io = new Server(server, {
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE']
-  }
+  },
+  pingTimeout: 10000, // Disconnect clients that don't respond to pings within 10s (memory leak prevention)
+  pingInterval: 25000,
+  connectTimeout: 5000
 });
 
 // Test connection on startup

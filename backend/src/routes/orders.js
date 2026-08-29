@@ -314,9 +314,11 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Create order with items
+    let order;
+    await prisma.$transaction(async (tx) => {
+      // Create order with items
 
-    const order = await prisma.order.create({
+    order = await tx.order.create({
       data: {
         tenantId,
         orderNumber,
@@ -346,7 +348,7 @@ router.post('/', async (req, res) => {
     });
 
     // Audit log
-    await prisma.auditLog.create({
+    await tx.auditLog.create({
       data: {
         tenantId,
         userId: validCustomerId,
@@ -359,7 +361,7 @@ router.post('/', async (req, res) => {
 
     // Increment Promo Uses
     if (appliedPromoId) {
-      await prisma.promoCode.update({
+      await tx.promoCode.update({
         where: { id: appliedPromoId },
         data: { currentUses: { increment: 1 } }
       });
@@ -371,12 +373,12 @@ router.post('/', async (req, res) => {
       if (!pid) continue;
 
       // Update main product stock
-      await prisma.product.update({
+      await tx.product.update({
         where: { id: parseInt(pid) },
         data: { stock: { decrement: item.quantity } }
       });
 
-      await prisma.inventoryLog.create({
+      await tx.inventoryLog.create({
         data: {
           productId: parseInt(pid),
           quantityChange: -item.quantity,
@@ -387,14 +389,14 @@ router.post('/', async (req, res) => {
 
       // Recipe Deduction for Main Product
       try {
-        const recipes = await prisma.recipeItem.findMany({ where: { productId: parseInt(pid) }, include: { rawIngredient: true } });
+        const recipes = await tx.recipeItem.findMany({ where: { productId: parseInt(pid) }, include: { rawIngredient: true } });
         for (const recipe of recipes) {
           const deductAmount = (recipe.quantityUsed / Math.max(recipe.rawIngredient?.yield || 1, 0.001)) * item.quantity;
-          await prisma.rawIngredient.update({
+          await tx.rawIngredient.update({
             where: { id: recipe.rawIngredientId },
             data: { stock: { decrement: deductAmount } }
           });
-          await prisma.rawIngredientLog.create({
+          await tx.rawIngredientLog.create({
             data: {
               rawIngredientId: recipe.rawIngredientId,
               quantityChange: -deductAmount,
@@ -411,7 +413,7 @@ router.post('/', async (req, res) => {
       const addonsInput = item.addons || item.selectedAddons || [];
       if (addonsInput.length > 0) {
         try {
-          const fullProduct = await prisma.product.findUnique({
+          const fullProduct = await tx.product.findUnique({
              where: { id: parseInt(pid) },
              include: { addons: true }
           });
@@ -420,11 +422,11 @@ router.post('/', async (req, res) => {
             const addon = fullProduct?.addons?.find(a => a.id === id);
             if (addon && addon.rawIngredientId && addon.quantityUsed) {
               const deductAmount = addon.quantityUsed * item.quantity;
-              await prisma.rawIngredient.update({
+              await tx.rawIngredient.update({
                  where: { id: addon.rawIngredientId },
                  data: { stock: { decrement: deductAmount } }
               });
-              await prisma.rawIngredientLog.create({
+              await tx.rawIngredientLog.create({
                  data: {
                    rawIngredientId: addon.rawIngredientId,
                    quantityChange: -deductAmount,
@@ -446,12 +448,12 @@ router.post('/', async (req, res) => {
           for (const key in choices) {
             const subProduct = choices[key];
             if (subProduct && subProduct.id) {
-              await prisma.product.update({
+              await tx.product.update({
                 where: { id: parseInt(subProduct.id) },
                 data: { stock: { decrement: item.quantity } }
               });
 
-              await prisma.inventoryLog.create({
+              await tx.inventoryLog.create({
                 data: {
                   productId: parseInt(subProduct.id),
                   quantityChange: -item.quantity,
@@ -461,14 +463,14 @@ router.post('/', async (req, res) => {
               });
 
               // Recipe Deduction for Sub Product
-              const subRecipes = await prisma.recipeItem.findMany({ where: { productId: parseInt(subProduct.id) }, include: { rawIngredient: true } });
+              const subRecipes = await tx.recipeItem.findMany({ where: { productId: parseInt(subProduct.id) }, include: { rawIngredient: true } });
               for (const recipe of subRecipes) {
                 const subDeduct = (recipe.quantityUsed / Math.max(recipe.rawIngredient?.yield || 1, 0.001)) * item.quantity;
-                await prisma.rawIngredient.update({
+                await tx.rawIngredient.update({
                   where: { id: recipe.rawIngredientId },
                   data: { stock: { decrement: subDeduct } }
                 });
-                await prisma.rawIngredientLog.create({
+                await tx.rawIngredientLog.create({
                   data: {
                     rawIngredientId: recipe.rawIngredientId,
                     quantityChange: -subDeduct,
@@ -486,13 +488,15 @@ router.post('/', async (req, res) => {
     }
 
     // Create notification
-    await prisma.notification.create({
+    await tx.notification.create({
       data: {
         orderId: order.id,
         type: 'order_placed',
         message: `New order #${order.orderNumber} from ${order.customerName}`,
         module: 'cashier'
       }
+    });
+
     });
 
     // Emit to cashier via WebSocket
