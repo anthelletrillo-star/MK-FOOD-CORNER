@@ -137,7 +137,7 @@ export default function Cart() {
     setRecommendations(suggested.slice(0, 4));
   }, [items, allProducts]);
 
-  const brandingColor = branding?.primaryColor || '#0a3d01';
+  const brandingColor = branding?.primaryColor || '#f97316';
   const menuLink = '/menu';
   const checkoutLink = '/checkout';
 

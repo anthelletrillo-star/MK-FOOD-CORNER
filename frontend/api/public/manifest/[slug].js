@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
   let tenantName = 'MK FOOD CORNER';
   let tenantLogo = '/hb_logo.jpg';
-  let themeColor = '#0a3d01';
+  let themeColor = '#f97316';
 
   try {
     const response = await fetch(`${apiUrl}/public/tenant/${slug}`);

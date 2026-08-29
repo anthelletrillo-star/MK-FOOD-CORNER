@@ -287,7 +287,7 @@ export default function OrderConfirmation() {
     return () => clearTheme();
   }, [tenantSlug]);
 
-  const brandingColor = branding?.primaryColor || '#0a3d01';
+  const brandingColor = branding?.primaryColor || '#f97316';
   const homeLink = '/';
   const menuLink = '/menu';
   const queueLink = '/queue';

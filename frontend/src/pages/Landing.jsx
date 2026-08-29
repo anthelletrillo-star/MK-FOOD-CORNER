@@ -119,7 +119,7 @@ export default function Landing() {
   const menuLink = '/menu';
   const queueLink = '/queue';
   const portalLink = '/member-portal';
-  const primaryColor = tenant?.primaryColor || '#0a3d01';
+  const primaryColor = tenant?.primaryColor || '#f97316';
 
   // Smart background fallback based on tenant type
   const burgerBackground = 'https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=2000&auto=format&fit=crop';
@@ -334,7 +334,7 @@ export default function Landing() {
             <>
               HOMETOWN
               <br />
-              <span style={{ color: '#0a3d01' }}>
+              <span style={{ color: '#f97316' }}>
                 BREW
               </span>
             </>

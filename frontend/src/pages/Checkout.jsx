@@ -150,7 +150,7 @@ export default function Checkout() {
   }, [tenantSlug, user?.tenantSlug, orderType]);
 
 
-  const brandingColor = branding?.primaryColor || '#0a3d01';
+  const brandingColor = branding?.primaryColor || '#f97316';
   const cartLink = '/cart';
   const menuLink = '/menu';
   const isFullRedemption = items.length > 0 && items.every(item => item.isRedemption);

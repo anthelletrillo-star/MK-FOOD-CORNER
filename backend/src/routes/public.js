@@ -41,7 +41,7 @@ router.get('/tenant/:slug', async (req, res) => {
       logo: '/favicon.png',
       favicon: '/favicon.png',
       primaryColor: '#f97316',
-      secondaryColor: '#fbbf24',
+      secondaryColor: '#ef4444',
       active: true,
       storeClosed: false,
       deliveryDisabled: false,

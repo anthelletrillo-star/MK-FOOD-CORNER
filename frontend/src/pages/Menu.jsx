@@ -257,7 +257,7 @@ export default function Menu() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [selectedProduct]);
 
-  const brandingColor = branding?.primaryColor || '#0a3d01';
+  const brandingColor = branding?.primaryColor || '#f97316';
   const itemCount = getItemCount();
 
   const { joinRoom, leaveRoom, connected, emit } = useSocket();
@@ -366,7 +366,7 @@ export default function Menu() {
   useDynamicBranding(tenantName, branding?.favicon);
 
   if (loading) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0a3d01] gap-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f97316] gap-6">
       <img src="/favicon.png" alt="MK FOOD CORNER" className="w-24 h-24 rounded-3xl animate-pulse shadow-[0_0_60px_rgba(255,255,255,0.15)] object-contain bg-white/10 p-2" />
       <div className="text-center">
         <h1 className="text-white text-[22px] font-black tracking-tight font-heading">MK FOOD CORNER</h1>

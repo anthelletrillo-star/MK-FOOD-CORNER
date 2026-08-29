@@ -23,8 +23,8 @@ async function main() {
     where: { slug: 'project-million' },
     data: {
       name: 'MK FOOD CORNER',
-      primaryColor: '#0a3d01', // Solid brand Deep Forest Green
-      secondaryColor: '#0a3d01' // Solid brand Deep Forest Green
+      primaryColor: '#f97316', // Solid brand Deep Forest Green
+      secondaryColor: '#f97316' // Solid brand Deep Forest Green
     }
   });
 
