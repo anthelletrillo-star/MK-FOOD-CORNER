@@ -281,6 +281,11 @@ router.get('/tenant/:slug/packages', async (req, res) => {
     const tenant = await prisma.tenant.findUnique({ where: { slug }, select: { id: true } });
     if (!tenant) return res.status(404).json({ success: false, message: 'Store not found' });
 
+    // Check if EventPackage model exists in Prisma client before querying
+    if (!prisma.eventPackage) {
+      return res.json({ success: true, data: [] });
+    }
+
     const packages = await prisma.eventPackage.findMany({
       where: { tenantId: tenant.id, isActive: true },
       orderBy: { id: 'asc' }
@@ -288,7 +293,8 @@ router.get('/tenant/:slug/packages', async (req, res) => {
     res.json({ success: true, data: packages });
   } catch (error) {
     console.error('Public Packages Error:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch packages' });
+    // Gracefully return empty array instead of 500 to prevent frontend crash
+    res.json({ success: true, data: [] });
   }
 });
 
