@@ -57,7 +57,7 @@ prisma.$connect()
 
 async function purgeOtherTenants() {
   try {
-    const slugsToPurge = ['burger-palace', 'hometownbrew'];
+    const slugsToPurge = ['burger-palace', 'mkfoodcrner'];
     
     for (const slug of slugsToPurge) {
       const tenant = await prisma.tenant.findUnique({ where: { slug } });

@@ -1,8 +1,8 @@
 export default function handler(req, res) {
   const title = 'MK FOOD CORNER POS';
   const description = 'Professional Point of Sale System';
-  const image = 'https://hometownbrew.vercel.app/favicon.png';
-  const siteUrl = 'https://hometownbrew.vercel.app/';
+  const image = 'https://mkfoodcrner.vercel.app/favicon.png';
+  const siteUrl = 'https://mkfoodcrner.vercel.app/';
 
   // Return HTML with OG tags + instant redirect for regular users
   res.setHeader('Content-Type', 'text/html; charset=utf-8');

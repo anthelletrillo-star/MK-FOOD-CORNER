@@ -129,7 +129,7 @@ router.get('/tenant/:slug/og-image', async (req, res) => {
     }
 
     if (ogImage.startsWith('/')) {
-      const host = req.headers.host || 'hometownbrew.vercel.app';
+      const host = req.headers.host || 'mkfoodcrner.vercel.app';
       const protocol = req.headers['x-forwarded-proto'] || 'https';
       return res.redirect(`${protocol}://${host}${ogImage}`);
     }
@@ -192,14 +192,14 @@ router.get('/:slug', async (req, res) => {
 
     const title = tenant.name;
     const description = 'Explore our premium store.';
-    const redirectUrl = `https://hometownbrew.vercel.app/menu`;
+    const redirectUrl = `https://mkfoodcrner.vercel.app/menu`;
 
     let ogImage = tenant.ogImage || tenant.logo;
     if (!ogImage || ogImage === '/logo.png') {
       ogImage = 'https://cdn-icons-png.flaticon.com/512/5787/5787016.png';
     }
     if (ogImage && ogImage.startsWith('/')) {
-      ogImage = `https://hometownbrew.vercel.app${ogImage}`;
+      ogImage = `https://mkfoodcrner.vercel.app${ogImage}`;
     }
 
     res.send(`

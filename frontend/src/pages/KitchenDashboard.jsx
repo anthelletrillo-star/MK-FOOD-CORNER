@@ -168,7 +168,7 @@ export default function KitchenDashboard() {
 
   if (loading) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f97316] gap-6">
-      <img src="/favicon.png" alt="MK FOOD CORNER" className="w-24 h-24 rounded-3xl animate-pulse shadow-[0_0_60px_rgba(255,255,255,0.15)]" />
+      <img src="/favicon.png" alt="MK FOOD CORNER" className="w-24 h-24 rounded-3xl animate-pulse shadow-[0_0_60px_rgba(255,255,255,0.15)] object-contain bg-white/10 p-2" />
       <div className="text-center">
         <h1 className="text-white text-[22px] font-black tracking-tight font-heading">MK FOOD CORNER</h1>
         <p className="text-white/50 text-[11px] font-semibold tracking-[3px] uppercase mt-1.5">good food. good moments</p>
