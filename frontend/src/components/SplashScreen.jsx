@@ -46,7 +46,7 @@ export default function SplashScreen({ children }) {
           MK FOOD CORNER
         </h1>
         <p className="text-white/60 text-[12px] font-semibold tracking-[4px] uppercase mt-2">
-          Bringing home closer
+          good food. good moments
         </p>
         
         {/* Loading Bar */}

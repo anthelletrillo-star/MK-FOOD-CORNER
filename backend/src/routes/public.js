@@ -47,7 +47,7 @@ router.get('/tenant/:slug', async (req, res) => {
       deliveryDisabled: false,
       saDeliveryDisabled: false,
       saRewardsDisabled: false,
-      landing_description: 'Bringing home closer',
+      landing_description: 'good food. good moments',
       seasonal_effect: 'auto',
       points_rate: 100
     };
@@ -106,7 +106,7 @@ router.get('/tenant/:slug', async (req, res) => {
         deliveryDisabled: false,
         saDeliveryDisabled: false,
         saRewardsDisabled: false,
-        landing_description: 'Bringing home closer',
+        landing_description: 'good food. good moments',
         seasonal_effect: 'auto',
         points_rate: 100
       }
