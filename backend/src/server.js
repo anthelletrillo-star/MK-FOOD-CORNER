@@ -51,9 +51,36 @@ const io = new Server(server, {
 prisma.$connect()
   .then(async () => {
     console.log('✅ Prisma connected to Database');
+    await ensureAuthorizedDeviceTable();
     await purgeOtherTenants();
   })
   .catch((err) => console.error('❌ Prisma connection FAILED:', err.message));
+
+async function ensureAuthorizedDeviceTable() {
+  try {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "public"."AuthorizedDevice" (
+        "id" SERIAL NOT NULL,
+        "tenantId" INTEGER NOT NULL,
+        "deviceToken" TEXT NOT NULL,
+        "deviceName" TEXT NOT NULL,
+        "isActive" BOOLEAN NOT NULL DEFAULT true,
+        "addedById" INTEGER,
+        "lastUsedAt" TIMESTAMP(3),
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+        CONSTRAINT "AuthorizedDevice_pkey" PRIMARY KEY ("id")
+      );
+    `);
+    await prisma.$executeRawUnsafe(`
+      CREATE UNIQUE INDEX IF NOT EXISTS "AuthorizedDevice_deviceToken_key" ON "public"."AuthorizedDevice"("deviceToken");
+    `);
+    console.log('✅ AuthorizedDevice table schema verified');
+  } catch (err) {
+    console.warn('⚠️ Table verification note:', err.message);
+  }
+}
 
 async function purgeOtherTenants() {
   try {
