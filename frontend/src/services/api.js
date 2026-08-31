@@ -26,12 +26,14 @@ api.interceptors.request.use(config => {
   }
 
   config.headers['x-tenant-slug'] = tenantSlug;
-  // If we have a slug, we should let the backend resolve the ID by slug
-  // Normally we use a saved tenant_id from localStorage, but this deployment
-  // uses a single tenant. Force the tenant id via env or fallback to '3'.
-  const FORCE_TENANT_ID = import.meta.env.VITE_FORCE_TENANT_ID || '3';
-  config.headers['x-tenant-id'] = FORCE_TENANT_ID;
-  // If tenantQuery exists, we DONT send a hardcoded ID so the backend uses the Slug
+  // Use the tenant ID saved at login so it always matches the authenticated user's tenant.
+  // Falls back to env variable or omits the header entirely if not yet logged in.
+  const storedTenantId = localStorage.getItem('tenant_id');
+  if (storedTenantId) {
+    config.headers['x-tenant-id'] = storedTenantId;
+  } else if (import.meta.env.VITE_FORCE_TENANT_ID) {
+    config.headers['x-tenant-id'] = import.meta.env.VITE_FORCE_TENANT_ID;
+  }
 
   return config;
 });
