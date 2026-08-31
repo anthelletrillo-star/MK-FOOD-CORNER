@@ -238,30 +238,38 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-h-0 overflow-hidden md:h-screen">
-        <header className="flex items-center justify-between px-4 py-3 md:px-6 md:py-4 border-b border-surface-200 bg-white/80 backdrop-blur-xl flex-shrink-0">
-          <div className="flex items-center gap-4">
+        <header className="flex items-center justify-between px-3 sm:px-6 py-2.5 sm:py-3.5 border-b border-surface-200 bg-white/80 backdrop-blur-xl flex-shrink-0 gap-3 sm:gap-4">
+          <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
             <button
               onClick={() => setShowDrawer(!showDrawer)}
-              className="md:hidden p-2 hover:bg-surface-100 rounded-lg transition-colors text-surface-900"
+              className="md:hidden p-2 hover:bg-surface-100 rounded-xl transition-colors text-surface-900 flex-shrink-0"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
-            <div>
-              <h2 className="font-heading text-lg md:text-xl font-black text-surface-900 leading-tight">Admin Dashboard</h2>
-              <p className="text-[10px] md:text-[11px] font-bold uppercase tracking-[0.25em] text-surface-500 mt-1">
-                {user?.tenantName || 'Business Control Center'}
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <h2 className="font-heading text-sm sm:text-base md:text-lg font-black text-surface-900 leading-tight truncate">
+                  {user?.tenantName || 'MK FOOD CORNER'}
+                </h2>
+                <span className="hidden sm:inline-flex px-2 py-0.5 rounded-md bg-orange-50 text-orange-700 font-extrabold text-[10px] uppercase tracking-wider border border-orange-200/60 flex-shrink-0">
+                  Admin Portal
+                </span>
+              </div>
+              <p className="text-[10px] md:text-xs font-semibold text-surface-500 truncate mt-0.5">
+                Business Control Center
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-bold text-surface-900">{user?.name}</p>
+              <p className="text-sm font-bold text-surface-900 leading-tight">{user?.name}</p>
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-surface-500">{user?.role}</p>
             </div>
             <button
               onClick={logoutUser}
-              className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-bold text-red-600 transition-all hover:bg-red-100 hover:text-red-700"
+              title="Logout"
+              className="flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-red-600 transition-all hover:bg-red-100 hover:text-red-700 flex-shrink-0"
             >
               <LogOut className="w-4 h-4" />
               <span className="hidden sm:inline">Log Out</span>

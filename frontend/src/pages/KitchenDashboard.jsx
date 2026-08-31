@@ -271,28 +271,39 @@ export default function KitchenDashboard() {
       )}
 
       {/* Header */}
-      <header className="bg-surface-900 border-b border-surface-800 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between flex-shrink-0 z-10">
-        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-          <img src={user?.tenantLogo || "/icon-app.png"} className="w-9 h-9 rounded-xl object-contain bg-surface-800 p-1 border border-surface-700 shadow-sm" alt={user?.tenantName || 'MK FOOD CORNER'} />
-          <div className="flex flex-col">
-            <h2 className="font-heading font-black text-emerald-500 text-lg sm:text-xl tracking-tight uppercase truncate leading-tight">{user?.tenantName || 'Kitchen'} Dashboard</h2>
-            <div className="flex items-center gap-1.5">
+      <header className="bg-surface-900 border-b border-surface-800 px-3 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between flex-shrink-0 z-10 no-print gap-2 sm:gap-4">
+        <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+          <img 
+            src={user?.tenantLogo || "/icon-app.png"} 
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-contain bg-surface-800 p-1 border border-surface-700 shadow-sm flex-shrink-0" 
+            alt={user?.tenantName || 'MK FOOD CORNER'} 
+          />
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <h2 className="font-heading font-black text-emerald-500 text-sm sm:text-base md:text-lg tracking-tight uppercase truncate leading-tight">
+                {user?.tenantName || 'MK FOOD CORNER'}
+              </h2>
+              <span className="hidden xs:inline-flex px-2 py-0.5 rounded-md bg-emerald-950/80 text-emerald-400 font-extrabold text-[10px] uppercase tracking-wider border border-emerald-800/80 flex-shrink-0">
+                Kitchen KDS
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 mt-0.5">
               <span className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></span>
-              <span className="text-[10px] font-bold text-surface-500 uppercase tracking-widest">
+              <span className="text-[10px] font-bold text-surface-400 uppercase tracking-widest truncate">
                 {connected ? 'Realtime Active' : 'Offline'}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           {activeShift ? (
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-emerald-950/60 border border-emerald-800 text-emerald-300 rounded-xl text-xs">
+            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-emerald-950/60 border border-emerald-800 text-emerald-300 rounded-xl text-xs flex-shrink-0">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span className="font-bold">Shift Active</span>
             </div>
           ) : (
-            <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-950/60 border border-amber-800 text-amber-300 rounded-lg text-xs font-bold">
+            <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-950/60 border border-amber-800 text-amber-300 rounded-lg text-xs font-bold flex-shrink-0">
               <Lock className="w-3 h-3" /> Not Timed In
             </span>
           )}
@@ -300,23 +311,33 @@ export default function KitchenDashboard() {
           {activeShift ? (
             <button
               onClick={() => setShowTimeOutModal(true)}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-rose-950/60 border border-rose-800 text-rose-300 hover:bg-rose-900 active:scale-95 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-sm"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-rose-950/60 border border-rose-800 text-rose-300 hover:bg-rose-900 active:scale-95 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-sm whitespace-nowrap flex-shrink-0"
             >
-              <Timer className="w-4 h-4 text-rose-400" />
-              <span className="hidden xs:inline">End Shift /</span> Time Out
+              <Timer className="w-4 h-4 text-rose-400 flex-shrink-0" />
+              <span><span className="hidden sm:inline">End Shift / </span>Time Out</span>
             </button>
           ) : (
             <button
               onClick={() => setShowTimeInModal(true)}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-md shadow-emerald-600/20"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-md shadow-emerald-600/20 whitespace-nowrap flex-shrink-0"
             >
-              <Timer className="w-4 h-4" />
-              Time In
+              <Timer className="w-4 h-4 flex-shrink-0" />
+              <span>Time In</span>
             </button>
           )}
 
-          <span className="text-xs sm:text-sm font-medium text-surface-400 hidden sm:flex sm:items-center sm:gap-1.5"><ChefHat className="w-4 h-4" /> {user?.name}</span>
-          <button onClick={logoutUser} className="text-surface-500 hover:text-red-400 text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5"><LogOut className="w-4 h-4" /> Log Out</button>
+          <div className="hidden lg:flex items-center gap-1.5 text-xs font-bold text-surface-300 px-2.5 py-1 bg-surface-800 rounded-lg flex-shrink-0">
+            <ChefHat className="w-3.5 h-3.5 text-surface-400" />
+            <span className="truncate max-w-[120px]">{user?.name}</span>
+          </div>
+
+          <button 
+            onClick={logoutUser} 
+            title="Logout" 
+            className="p-1.5 sm:p-2 text-surface-400 hover:text-red-400 hover:bg-surface-800 rounded-xl transition-all flex items-center justify-center flex-shrink-0"
+          >
+            <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
         </div>
       </header>
 

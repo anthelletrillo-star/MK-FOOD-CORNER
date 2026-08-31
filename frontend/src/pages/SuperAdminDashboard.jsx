@@ -132,25 +132,32 @@ export default function SuperAdminDashboard() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-h-0 overflow-hidden md:h-screen">
         {/* Header */}
-        <header className="bg-slate-900 border-b border-white/5 px-6 py-4 flex items-center justify-between sticky top-0 z-20 shadow-xl flex-shrink-0">
-          <div className="flex items-center gap-4">
-            <img src="/icon-app.png" className="w-10 h-10 rounded-xl object-contain bg-slate-800 p-1 border border-white/10 shadow-sm" alt="MK FOOD CORNER" />
-            <div>
-              <h2 className="font-heading font-black text-xl text-white tracking-tight">Active Shops & Franchises</h2>
-              <p className="text-xs text-slate-400 font-medium">Real-time status of all stores on the network</p>
+        <header className="bg-slate-900 border-b border-white/5 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between sticky top-0 z-20 shadow-xl flex-shrink-0 gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <img src="/icon-app.png" className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-contain bg-slate-800 p-1 border border-white/10 shadow-sm flex-shrink-0" alt="Elevate POS" />
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h2 className="font-heading font-black text-base sm:text-xl text-white tracking-tight truncate leading-tight">Elevate SuperAdmin</h2>
+                <span className="hidden xs:inline-flex px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 font-extrabold text-[10px] uppercase tracking-wider border border-indigo-500/30 flex-shrink-0">Network Hub</span>
+              </div>
+              <p className="text-[10px] sm:text-xs text-slate-400 font-medium truncate">Real-time status of all stores on the network</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-bold text-white">{user?.name}</p>
+              <p className="text-sm font-bold text-white leading-tight">{user?.name}</p>
               <p className="text-[10px] font-bold text-slate-500 uppercase">{user?.role}</p>
             </div>
             <div className="flex items-center gap-2 border-l border-white/5 pl-2 sm:pl-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20 flex-shrink-0 text-sm sm:text-base">
                 {user?.name?.charAt(0)}
               </div>
-              <button onClick={logoutUser} className="md:hidden p-2 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors flex items-center justify-center">
-                <LogOut className="w-5 h-5" />
+              <button 
+                onClick={logoutUser} 
+                title="Logout" 
+                className="md:hidden p-2 text-red-400 hover:bg-red-500/10 rounded-xl transition-colors flex items-center justify-center flex-shrink-0"
+              >
+                <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
           </div>

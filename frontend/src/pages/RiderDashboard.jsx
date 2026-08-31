@@ -402,44 +402,58 @@ export default function RiderDashboard() {
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
       {/* Header */}
-      <div className="bg-white px-6 pt-12 pb-6 shadow-sm border-b border-slate-100 sticky top-0 z-30">
-        <div className="flex justify-between items-start mb-6">
-          <div className="flex items-center gap-3">
-            <img src={user?.tenantLogo || branding?.logo || "/icon-app.png"} className="w-11 h-11 rounded-2xl object-contain bg-white p-1 border border-slate-200 shadow-sm" alt="MK FOOD CORNER" />
-            <div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">Rider Dashboard</h1>
+      <div className="bg-white px-4 sm:px-6 pt-6 sm:pt-8 pb-4 sm:pb-6 shadow-sm border-b border-slate-100 sticky top-0 z-30">
+        <div className="flex justify-between items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
+          <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+            <img 
+              src={user?.tenantLogo || branding?.logo || "/icon-app.png"} 
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl object-contain bg-white p-1 border border-slate-200 shadow-sm flex-shrink-0" 
+              alt={user?.tenantName || 'MK FOOD CORNER'} 
+            />
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <h1 className="text-base sm:text-xl font-black text-slate-900 tracking-tight truncate leading-tight">
+                  {user?.tenantName || 'MK FOOD CORNER'}
+                </h1>
+                <span className="hidden xs:inline-flex px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-extrabold text-[10px] uppercase tracking-wider border border-blue-200/60 flex-shrink-0">
+                  Rider App
+                </span>
+              </div>
               <div className="flex items-center gap-2 mt-0.5">
-                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">{user?.name} • Delivery Team</p>
+                <p className="text-slate-500 text-[10px] sm:text-xs font-bold uppercase tracking-widest truncate">{user?.name || 'Rider'} • Delivery</p>
                 {trackingActive && (
-                  <div className="flex items-center gap-1.5 bg-blue-50 px-2 py-0.5 rounded-full animate-pulse border border-blue-100">
+                  <div className="flex items-center gap-1.5 bg-blue-50 px-2 py-0.5 rounded-full animate-pulse border border-blue-100 flex-shrink-0">
                     <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                    <span className="text-[10px] font-black text-blue-600 uppercase tracking-tight">GPS Live</span>
+                    <span className="text-[9px] sm:text-[10px] font-black text-blue-600 uppercase tracking-tight">GPS Live</span>
                   </div>
                 )}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             {activeShift ? (
               <button
                 onClick={() => setShowTimeOutModal(true)}
-                className="px-3 py-2 bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 active:scale-95 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-sm"
+                className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 active:scale-95 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-sm whitespace-nowrap flex-shrink-0"
               >
-                <Timer className="w-4 h-4 text-rose-600" /> Time Out
+                <Timer className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                <span>Time Out</span>
               </button>
             ) : (
               <button
                 onClick={() => setShowTimeInModal(true)}
-                className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-md shadow-emerald-600/20"
+                className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-md shadow-emerald-600/20 whitespace-nowrap flex-shrink-0"
               >
-                <Timer className="w-4 h-4" /> Time In
+                <Timer className="w-4 h-4 flex-shrink-0" />
+                <span>Time In</span>
               </button>
             )}
             <button
               onClick={logoutUser}
-              className="p-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors"
+              title="Logout"
+              className="p-2 sm:p-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors flex-shrink-0"
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
         </div>

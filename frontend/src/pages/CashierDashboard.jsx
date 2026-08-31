@@ -874,47 +874,71 @@ export default function CashierDashboard() {
       )}
 
       {/* Header */}
-      <header className="bg-white border-b border-surface-200 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between flex-shrink-0 z-10 no-print">
-        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-          <img src={user?.tenantLogo || "/icon-app.png"} className="w-9 h-9 rounded-xl object-contain bg-surface-50 p-1 border border-surface-200 shadow-sm" alt={user?.tenantName || 'MK FOOD CORNER'} />
-          <div className="flex flex-col">
-            <h2 className="font-heading font-black text-lg sm:text-xl text-primary-600 tracking-tight uppercase truncate leading-tight">{user?.tenantName || 'Cashier'} Dashboard</h2>
+      <header className="bg-white border-b border-surface-200 px-3 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between flex-shrink-0 z-10 no-print gap-2 sm:gap-4">
+        <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+          <img 
+            src={user?.tenantLogo || "/icon-app.png"} 
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-contain bg-surface-50 p-1 border border-surface-200 shadow-sm flex-shrink-0" 
+            alt={user?.tenantName || 'MK FOOD CORNER'} 
+          />
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <h2 className="font-heading font-black text-sm sm:text-base md:text-lg text-primary-600 tracking-tight uppercase truncate leading-tight">
+                {user?.tenantName || 'MK FOOD CORNER'}
+              </h2>
+              <span className="hidden xs:inline-flex px-2 py-0.5 rounded-md bg-orange-50 text-orange-700 font-extrabold text-[10px] uppercase tracking-wider border border-orange-200/60 flex-shrink-0">
+                Cashier POS
+              </span>
+            </div>
+            <p className="text-[10px] sm:text-xs font-semibold text-surface-500 truncate">
+              Point of Sale & Register
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           {activeShift ? (
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs">
+            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs flex-shrink-0">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <span className="font-bold text-emerald-800">Shift Active</span>
               <span className="text-emerald-600 font-medium font-mono">Float: {formatCurrency(activeShift.startingCash)}</span>
             </div>
           ) : (
-            <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold">
-              <Lock className="w-3 h-3" /> Not Timed In
+            <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold flex-shrink-0">
+              <Lock className="w-3 h-3 text-amber-600" /> Not Timed In
             </span>
           )}
 
           {activeShift ? (
             <button
               onClick={handleOpenTimeOut}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 active:scale-95 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-sm"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 active:scale-95 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-sm whitespace-nowrap flex-shrink-0"
             >
-              <Timer className="w-4 h-4 text-rose-600" />
-              <span className="hidden xs:inline">End Shift /</span> Time Out
+              <Timer className="w-4 h-4 text-rose-600 flex-shrink-0" />
+              <span><span className="hidden sm:inline">End Shift / </span>Time Out</span>
             </button>
           ) : (
             <button
               onClick={handleOpenTimeIn}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-95 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-md shadow-orange-500/20"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-95 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-md shadow-orange-500/20 whitespace-nowrap flex-shrink-0"
             >
-              <Timer className="w-4 h-4" />
-              Time In
+              <Timer className="w-4 h-4 flex-shrink-0" />
+              <span>Time In</span>
             </button>
           )}
 
-          <span className="text-xs sm:text-sm font-medium text-surface-600 hidden sm:flex sm:items-center sm:gap-1.5"><User className="w-4 h-4" /> {user?.name}</span>
-          <button onClick={logoutUser} title="Logout" className="text-surface-400 hover:text-red-500 text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5"><LogOut className="w-5 h-5" /></button>
+          <div className="hidden lg:flex items-center gap-1.5 text-xs font-bold text-surface-600 px-2.5 py-1 bg-surface-100 rounded-lg flex-shrink-0">
+            <User className="w-3.5 h-3.5 text-surface-500" />
+            <span className="truncate max-w-[120px]">{user?.name}</span>
+          </div>
+
+          <button 
+            onClick={logoutUser} 
+            title="Logout" 
+            className="p-1.5 sm:p-2 text-surface-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all flex items-center justify-center flex-shrink-0"
+          >
+            <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
         </div>
       </header>
 
