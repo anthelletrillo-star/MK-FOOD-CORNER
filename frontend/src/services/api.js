@@ -10,8 +10,13 @@ const api = axios.create({
 
 // Auth & Tenant interceptor
 api.interceptors.request.use(config => {
+  // 1. Attach JWT Authorization Bearer header
+  const token = localStorage.getItem('pos_token');
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
 
-  // TENANT DETECTION: Extract company name from URL (e.g. mcdonalds.your-pos.com)
+  // 2. TENANT DETECTION: Extract company name from URL (e.g. mcdonalds.your-pos.com)
   const hostname = window.location.hostname;
   const urlParams = new URLSearchParams(window.location.search);
   const tenantQuery = urlParams.get('tenant');
@@ -26,8 +31,8 @@ api.interceptors.request.use(config => {
   }
 
   config.headers['x-tenant-slug'] = tenantSlug;
-  // Use the tenant ID saved at login so it always matches the authenticated user's tenant.
-  // Falls back to env variable or omits the header entirely if not yet logged in.
+
+  // 3. Tenant ID header for tenant context resolution
   const storedTenantId = localStorage.getItem('tenant_id');
   if (storedTenantId) {
     config.headers['x-tenant-id'] = storedTenantId;

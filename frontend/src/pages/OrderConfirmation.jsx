@@ -360,7 +360,7 @@ export default function OrderConfirmation() {
         setShowArrivalOverlay(true);
         // Display native OS notification banner (if permitted)
         import('../utils/helpers').then(({ showSystemNotification, playNotificationSound }) => {
-          showSystemNotification('MK FOOD CORNER', `Your order #${orderNumber} has arrived!`, branding?.logoUrl || '/hb_logo.jpg');
+          showSystemNotification('MK FOOD CORNER', `Your order #${orderNumber} has arrived!`, branding?.logoUrl || '/icon-app.png');
 
           // Clear any existing alert loop
           if (window._arrivalLoopInterval) clearInterval(window._arrivalLoopInterval);
