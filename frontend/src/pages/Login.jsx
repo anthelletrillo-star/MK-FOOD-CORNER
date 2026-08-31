@@ -130,7 +130,7 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-[#f97316] via-[#dc2626] to-[#991b1b] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8 animate-fade-in-up">
-          <img src="/favicon.png" alt="MK FOOD CORNER" className="w-20 h-20 rounded-2xl mx-auto mb-4 shadow-[0_0_40px_rgba(255,255,255,0.1)] object-contain bg-white/10 p-2 border border-white/10" />
+          <img src="/mk-logo.png" alt="MK FOOD CORNER" className="w-24 h-24 rounded-2xl mx-auto mb-4 shadow-[0_0_40px_rgba(255,255,255,0.15)] object-contain bg-white/10 p-2 border border-white/10" />
           <h1 className="font-heading text-3xl font-bold text-white mb-2">Staff Login</h1>
           <p className="text-white/50">
             {branding?.name ? `Sign in to ${branding.name}` : 'Sign in to MK FOOD CORNER'}
