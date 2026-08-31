@@ -242,7 +242,7 @@ export default function KitchenDashboard() {
 
   if (loading) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f97316] gap-6">
-      <img src="/favicon.png" alt="MK FOOD CORNER" className="w-24 h-24 rounded-3xl animate-pulse shadow-[0_0_60px_rgba(255,255,255,0.15)] object-contain bg-white/10 p-2" />
+      <img src="/icon-app.png" alt="MK FOOD CORNER" className="w-24 h-24 rounded-3xl animate-pulse shadow-[0_0_60px_rgba(255,255,255,0.15)] object-contain bg-white/10 p-2" />
       <div className="text-center">
         <h1 className="text-white text-[22px] font-black tracking-tight font-heading">MK FOOD CORNER</h1>
         <p className="text-white/50 text-[11px] font-semibold tracking-[3px] uppercase mt-1.5">good food. good moments</p>
@@ -273,11 +273,7 @@ export default function KitchenDashboard() {
       {/* Header */}
       <header className="bg-surface-900 border-b border-surface-800 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between flex-shrink-0 z-10">
         <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-          {user?.tenantLogo ? (
-            <img src={user.tenantLogo} className="w-8 h-8 rounded-lg object-cover shadow-sm" alt={user.tenantName} />
-          ) : (
-            <div className="w-8 h-8 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500 shadow-inner"><ChefHat className="w-4 h-4" /></div>
-          )}
+          <img src={user?.tenantLogo || "/icon-app.png"} className="w-9 h-9 rounded-xl object-contain bg-surface-800 p-1 border border-surface-700 shadow-sm" alt={user?.tenantName || 'MK FOOD CORNER'} />
           <div className="flex flex-col">
             <h2 className="font-heading font-black text-emerald-500 text-lg sm:text-xl tracking-tight uppercase truncate leading-tight">{user?.tenantName || 'Kitchen'} Dashboard</h2>
             <div className="flex items-center gap-1.5">

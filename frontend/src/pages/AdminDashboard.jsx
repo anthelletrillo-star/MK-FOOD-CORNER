@@ -144,7 +144,7 @@ export default function AdminDashboard() {
 
   if (loading && !summary) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f97316] gap-6">
-      <img src="/favicon.png" alt="MK FOOD CORNER" className="w-24 h-24 rounded-3xl animate-pulse shadow-[0_0_60px_rgba(255,255,255,0.15)] object-contain bg-white/10 p-2" />
+      <img src="/icon-app.png" alt="MK FOOD CORNER" className="w-24 h-24 rounded-3xl animate-pulse shadow-[0_0_60px_rgba(255,255,255,0.15)] object-contain bg-white/10 p-2" />
       <div className="text-center">
         <h1 className="text-white text-[22px] font-black tracking-tight font-heading">MK FOOD CORNER</h1>
         <p className="text-white/50 text-[11px] font-semibold tracking-[3px] uppercase mt-1.5">good food. good moments</p>
@@ -163,12 +163,8 @@ export default function AdminDashboard() {
       <aside className="hidden md:flex w-64 bg-surface-900 text-white flex-col md:h-screen z-30 flex-shrink-0 border-r border-surface-800 pb-safe">
         {/* Desktop Only Header */}
         <div className="flex p-6 border-b border-surface-800 justify-between items-center">
-          <h1 className="font-heading text-xl font-black tracking-tight text-white flex items-center gap-2">
-            {user?.tenantLogo ? (
-              <img src={user.tenantLogo} className="w-8 h-8 rounded-lg object-contain bg-white/10 p-0.5" alt={user.tenantName} />
-            ) : (
-              <span className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center text-sm shadow-lg shadow-primary-500/20" style={{ backgroundColor: user?.tenantColor || user?.tenant?.primaryColor || (user?.tenantName?.toLowerCase().includes('burger') ? '#e11d48' : '#f97316') }}>POS</span>
-            )}
+          <h1 className="font-heading text-xl font-black tracking-tight text-white flex items-center gap-2.5">
+            <img src={user?.tenantLogo || "/icon-app.png"} className="w-9 h-9 rounded-xl object-contain bg-white/10 p-1 border border-white/10 shadow-sm" alt={user?.tenantName || 'MK FOOD CORNER'} />
             <span className="truncate">{user?.tenantName || 'ADMIN'}</span>
           </h1>
         </div>
@@ -205,12 +201,8 @@ export default function AdminDashboard() {
       <div className={`fixed left-0 top-0 h-full w-64 bg-surface-900 text-white flex flex-col z-50 md:hidden transform transition-transform duration-300 ease-in-out overflow-y-auto ${showDrawer ? 'translate-x-0' : '-translate-x-full'}`}>
         {/* Mobile Drawer Header */}
         <div className="flex p-6 border-b border-surface-800 justify-between items-center flex-shrink-0">
-          <h1 className="font-heading text-xl font-black tracking-tight text-white flex items-center gap-2">
-            {user?.tenantLogo ? (
-              <img src={user.tenantLogo} className="w-8 h-8 rounded-lg object-contain" alt={user.tenantName} />
-            ) : (
-              <span className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center text-sm shadow-lg shadow-primary-500/20" style={{ backgroundColor: user?.tenantColor || user?.tenant?.primaryColor || (user?.tenantName?.toLowerCase().includes('burger') ? '#e11d48' : '#f97316') }}>POS</span>
-            )}
+          <h1 className="font-heading text-xl font-black tracking-tight text-white flex items-center gap-2.5">
+            <img src={user?.tenantLogo || "/icon-app.png"} className="w-9 h-9 rounded-xl object-contain bg-white/10 p-1 border border-white/10 shadow-sm" alt={user?.tenantName || 'MK FOOD CORNER'} />
             <span className="truncate">{user?.tenantName || 'ADMIN'}</span>
           </h1>
           <button 

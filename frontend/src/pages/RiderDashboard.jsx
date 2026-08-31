@@ -404,16 +404,19 @@ export default function RiderDashboard() {
       {/* Header */}
       <div className="bg-white px-6 pt-12 pb-6 shadow-sm border-b border-slate-100 sticky top-0 z-30">
         <div className="flex justify-between items-start mb-6">
-          <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Rider Dashboard</h1>
-            <div className="flex items-center gap-2 mt-1">
-              <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">{user?.name} • Delivery Team</p>
-              {trackingActive && (
-                <div className="flex items-center gap-1.5 bg-blue-50 px-2 py-0.5 rounded-full animate-pulse border border-blue-100">
-                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                  <span className="text-[10px] font-black text-blue-600 uppercase tracking-tight">GPS Live</span>
-                </div>
-              )}
+          <div className="flex items-center gap-3">
+            <img src={user?.tenantLogo || branding?.logo || "/icon-app.png"} className="w-11 h-11 rounded-2xl object-contain bg-white p-1 border border-slate-200 shadow-sm" alt="MK FOOD CORNER" />
+            <div>
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight">Rider Dashboard</h1>
+              <div className="flex items-center gap-2 mt-0.5">
+                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">{user?.name} • Delivery Team</p>
+                {trackingActive && (
+                  <div className="flex items-center gap-1.5 bg-blue-50 px-2 py-0.5 rounded-full animate-pulse border border-blue-100">
+                    <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                    <span className="text-[10px] font-black text-blue-600 uppercase tracking-tight">GPS Live</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2">

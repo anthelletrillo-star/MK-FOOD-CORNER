@@ -876,11 +876,7 @@ export default function CashierDashboard() {
       {/* Header */}
       <header className="bg-white border-b border-surface-200 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between flex-shrink-0 z-10 no-print">
         <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-          {user?.tenantLogo ? (
-            <img src={user.tenantLogo} className="w-8 h-8 rounded-lg object-cover shadow-sm" alt={user.tenantName} />
-          ) : (
-            <div className="w-8 h-8 bg-primary-50 rounded-lg flex items-center justify-center text-primary-500 shadow-inner"><Store className="w-4 h-4" /></div>
-          )}
+          <img src={user?.tenantLogo || "/icon-app.png"} className="w-9 h-9 rounded-xl object-contain bg-surface-50 p-1 border border-surface-200 shadow-sm" alt={user?.tenantName || 'MK FOOD CORNER'} />
           <div className="flex flex-col">
             <h2 className="font-heading font-black text-lg sm:text-xl text-primary-600 tracking-tight uppercase truncate leading-tight">{user?.tenantName || 'Cashier'} Dashboard</h2>
           </div>

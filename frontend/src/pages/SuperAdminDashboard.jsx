@@ -134,16 +134,10 @@ export default function SuperAdminDashboard() {
         {/* Header */}
         <header className="bg-slate-900 border-b border-white/5 px-6 py-4 flex items-center justify-between sticky top-0 z-20 shadow-xl flex-shrink-0">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center border border-indigo-500/20">
-              <Zap className="w-5 h-5 text-indigo-400" />
-            </div>
+            <img src="/icon-app.png" className="w-10 h-10 rounded-xl object-contain bg-slate-800 p-1 border border-white/10 shadow-sm" alt="MK FOOD CORNER" />
             <div>
-              <h1 className="font-heading text-lg font-bold text-white leading-tight">
-                System Infrastructure
-              </h1>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                SuperAdmin Control
-              </p>
+              <h2 className="font-heading font-black text-xl text-white tracking-tight">Active Shops & Franchises</h2>
+              <p className="text-xs text-slate-400 font-medium">Real-time status of all stores on the network</p>
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
