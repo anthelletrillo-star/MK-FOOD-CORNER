@@ -17,10 +17,12 @@ import StaffTab from '../components/admin/StaffTab';
 import SuppliersTab from '../components/admin/SuppliersTab';
 import FeedbackTab from '../components/admin/FeedbackTab';
 import PromosTab from '../components/admin/PromosTab';
+import DevicesTab from '../components/admin/DevicesTab';
+import ShiftsTab from '../components/admin/ShiftsTab';
 import { formatCurrency } from '../utils/helpers';
 import { applyTheme, clearTheme } from '../utils/theme';
 import { useDynamicBranding } from '../hooks/useDynamicBranding';
-import { BarChart2, ShoppingBag, FolderTree, PackageSearch, Users, Truck, Package, RotateCcw, Wallet, LineChart, MessageSquare, ClipboardList, Settings, LogOut, Store, CircleDollarSign, Coins, ShoppingCart, Eye, Globe, Tag, Menu, X } from 'lucide-react';
+import { BarChart2, ShoppingBag, FolderTree, PackageSearch, Users, Truck, Package, RotateCcw, Wallet, LineChart, MessageSquare, ClipboardList, Settings, LogOut, Store, CircleDollarSign, Coins, ShoppingCart, Eye, Globe, Tag, Menu, X, Monitor, Timer } from 'lucide-react';
 import { useSocket } from '../context/SocketContext';
 
 export default function AdminDashboard() {
@@ -125,8 +127,10 @@ export default function AdminDashboard() {
       label: 'Management',
       items: [
         { id: 'staff', label: 'Staff', icon: <Users className="w-5 h-5" /> },
+        { id: 'shifts', label: 'Shifts & Drawer', icon: <Timer className="w-5 h-5" /> },
         { id: 'feedback', label: 'Feedback', icon: <MessageSquare className="w-5 h-5" /> },
         { id: 'promos', label: 'Promos', icon: <Tag className="w-5 h-5" /> },
+        { id: 'devices', label: 'Devices', icon: <Monitor className="w-5 h-5" /> },
       ]
     },
     {
@@ -369,6 +373,7 @@ export default function AdminDashboard() {
           {activeTab === 'packages' && <PackagesTab />}
           {activeTab === 'products' && <ProductsTab />}
           {activeTab === 'staff' && <StaffTab />}
+          {activeTab === 'shifts' && <ShiftsTab />}
           {activeTab === 'suppliers' && <SuppliersTab />}
           {activeTab === 'promos' && <PromosTab />}
           {activeTab === 'inventory' && <InventoryTab />}
@@ -378,6 +383,7 @@ export default function AdminDashboard() {
           { activeTab === 'feedback' && <FeedbackTab /> }
           { activeTab === 'audit' && <AuditLogsTab /> }
           {activeTab === 'settings' && <SettingsTab />}
+          {activeTab === 'devices' && <DevicesTab />}
         </div>
       </main>
     </div>

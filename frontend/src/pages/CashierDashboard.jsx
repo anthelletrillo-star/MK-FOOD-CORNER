@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getCashierOrders, confirmOrder, cashierCancelOrder, calculatePayment, markServed, startPreparing, completeOrder, updateOrderStatus } from '../services/api';
+import { getCashierOrders, confirmOrder, cashierCancelOrder, calculatePayment, markServed, startPreparing, completeOrder, updateOrderStatus, getCashierActiveShift, cashierTimeIn, cashierTimeOut } from '../services/api';
 import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency, formatDate, getElapsedMinutes, playNotificationSound, unlockAudio, updateAppBadge, requestNotificationPermission, showSystemNotification } from '../utils/helpers';
 import { useDynamicBranding } from '../hooks/useDynamicBranding';
 import { applyTheme, clearTheme } from '../utils/theme';
-import { Clock, AlertTriangle, Store, User, CreditCard, Gift, Banknote, Smartphone, CheckCircle, Navigation, Printer, ChefHat, ShoppingBag, Truck, MapPin, LogOut, Tag } from 'lucide-react';
+import { Clock, AlertTriangle, Store, User, CreditCard, Gift, Banknote, Smartphone, CheckCircle, Navigation, Printer, ChefHat, ShoppingBag, Truck, MapPin, LogOut, Tag, Timer, DollarSign, Lock, Unlock, ShieldAlert, Coins, Sparkles } from 'lucide-react';
 
 export default function CashierDashboard() {
   const [orders, setOrders] = useState([]);
@@ -26,6 +26,28 @@ export default function CashierDashboard() {
   const [showPrepModal, setShowPrepModal] = useState(false);
   const [showServeModal, setShowServeModal] = useState(false);
   const [prepTime, setPrepTime] = useState(15);
+  
+  // Shift & Cash Register State
+  const [activeShift, setActiveShift] = useState(null);
+  const [isShiftLoading, setIsShiftLoading] = useState(true);
+  const [showTimeInModal, setShowTimeInModal] = useState(false);
+  const [timeInStep, setTimeInStep] = useState('prompt'); // 'prompt' | 'inputCash'
+  const [startingCash, setStartingCash] = useState('');
+  const [timeInLoading, setTimeInLoading] = useState(false);
+  const [showTimeOutModal, setShowTimeOutModal] = useState(false);
+  const [endingCash, setEndingCash] = useState('');
+  const [timeOutNotes, setTimeOutNotes] = useState('');
+  const [timeOutLoading, setTimeOutLoading] = useState(false);
+  const [isRestricted, setIsRestricted] = useState(false);
+  const [shiftSummary, setShiftSummary] = useState(null);
+  const [restrictionModal, setRestrictionModal] = useState(null);
+
+  const handleRestrictedAction = (actionName = 'perform this action') => {
+    setRestrictionModal({
+      message: `You must Time In before ${actionName}.`
+    });
+  };
+
   const { joinRoom, onEvent, connected } = useSocket();
   const { logoutUser, user } = useAuth();
 
@@ -39,7 +61,8 @@ export default function CashierDashboard() {
 
   useEffect(() => {
     loadOrders();
-    if (connected && user?.tenantId) {
+    checkShiftStatus();
+    if (user?.tenantId) {
       joinRoom('cashier', user.tenantId);
     }
 
@@ -61,9 +84,10 @@ export default function CashierDashboard() {
   }, [connected, user?.tenantId]);
 
   useEffect(() => {
-    if (!connected || !onEvent) return;
+    if (!onEvent) return;
 
     const unsub = onEvent('new_order', (data) => {
+      console.log('🔔 new_order event received:', data);
       playNotificationSound('newOrder');
 
       const displayNum = data.order?.orderNumber?.includes('-') ? data.order.orderNumber.split('-')[1] : data.order?.orderNumber;
@@ -73,11 +97,12 @@ export default function CashierDashboard() {
     });
 
     const unsub2 = onEvent('order_update', (data) => {
+      console.log('🔔 order_update event received:', data);
       loadOrders(); // Refresh list when order status changes
     });
 
     return () => { unsub(); unsub2(); };
-  }, [connected, onEvent]);
+  }, [onEvent]);
 
   useEffect(() => {
     if (selectedOrder && selectedOrder.status === 'pending') {
@@ -162,18 +187,118 @@ export default function CashierDashboard() {
     } catch (e) { console.error(e); }
   };
 
+  const checkShiftStatus = async () => {
+    try {
+      setIsShiftLoading(true);
+      const res = await getCashierActiveShift();
+      if (res.data?.data) {
+        setActiveShift(res.data.data);
+        setIsRestricted(false);
+        setShowTimeInModal(false);
+      } else {
+        setActiveShift(null);
+        setIsRestricted(true);
+        setShowTimeInModal(true);
+        setTimeInStep('prompt');
+      }
+    } catch (err) {
+      console.error('Error checking shift status:', err);
+      setIsRestricted(true);
+    } finally {
+      setIsShiftLoading(false);
+    }
+  };
+
+  const handleOpenTimeIn = () => {
+    setTimeInStep('prompt');
+    setShowTimeInModal(true);
+  };
+
+  const handleProceedToCashInput = () => {
+    setTimeInStep('inputCash');
+  };
+
+  const handleCancelTimeIn = () => {
+    setShowTimeInModal(false);
+    setIsRestricted(true);
+  };
+
+  const handleConfirmTimeIn = async (e) => {
+    if (e) e.preventDefault();
+    const amount = parseFloat(startingCash);
+    if (isNaN(amount) || amount < 0) {
+      return alert('Please enter a valid starting cash amount (₱0 or more).');
+    }
+    setTimeInLoading(true);
+    try {
+      const res = await cashierTimeIn({ startingCash: amount });
+      setActiveShift(res.data.data);
+      setIsRestricted(false);
+      setShowTimeInModal(false);
+      setStartingCash('');
+      setTimeInStep('prompt');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to start shift.');
+    } finally {
+      setTimeInLoading(false);
+    }
+  };
+
+  const handleOpenTimeOut = async () => {
+    try {
+      const res = await getCashierActiveShift();
+      if (res.data?.data) {
+        setActiveShift(res.data.data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setEndingCash('');
+    setTimeOutNotes('');
+    setShowTimeOutModal(true);
+  };
+
+  const handleConfirmTimeOut = async (e) => {
+    if (e) e.preventDefault();
+    const amount = parseFloat(endingCash);
+    if (isNaN(amount) || amount < 0) {
+      return alert('Please enter the money currently counted in the cash register.');
+    }
+    setTimeOutLoading(true);
+    try {
+      const res = await cashierTimeOut({ endingCash: amount, notes: timeOutNotes });
+      const closed = res.data.data;
+      
+      setShiftSummary(closed);
+
+      setActiveShift(null);
+      setIsRestricted(true);
+      setShowTimeOutModal(false);
+      setEndingCash('');
+      setTimeOutNotes('');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to close shift.');
+    } finally {
+      setTimeOutLoading(false);
+    }
+  };
+
   const handleConfirmPayment = async () => {
+    if (isRestricted || !activeShift) {
+      handleRestrictedAction('processing payments');
+      return;
+    }
     if (!selectedOrder) return;
     if (!calcResult) {
        await calculateTotals(); // Try calculating again 
-       return alert('Calculating totals... Please try again in a second.');
+       return;
     }
-    if (!paymentData.received) return alert('Please enter the amount received.');
-    if (calcResult.isInsufficient) return alert('Insufficient payment amount. The total due is ' + formatCurrency(calcResult.total));
+    if (!paymentData.received) return;
+    if (calcResult.isInsufficient) return;
 
     // Enforce reference number for online payments (except for delivery orders where customer provides it)
     if ((paymentData.method === 'gcash' || paymentData.method === 'maya') && selectedOrder.orderType !== 'delivery' && !paymentData.referenceNumber) {
-      return alert(`Please enter the Reference Number (Last 4 Digits) for ${paymentData.method.toUpperCase()} payment.`);
+      return;
     }
 
     setProcessing(true);
@@ -198,13 +323,17 @@ export default function CashierDashboard() {
       setCalcResult(null);
       loadOrders();
     } catch (e) {
-      alert(e.response?.data?.message || 'Failed to confirm order');
+      console.error('Failed to confirm order:', e);
     } finally {
       setProcessing(false);
     }
   };
 
   const handleServeOrder = async () => {
+    if (isRestricted || !activeShift) {
+      handleRestrictedAction('completing or serving orders');
+      return;
+    }
     if (!selectedOrder) return;
     setProcessing(true);
     try {
@@ -213,18 +342,26 @@ export default function CashierDashboard() {
       setSelectedOrder(null);
       loadOrders();
     } catch (e) {
-      alert('Failed to mark order as served');
+      console.error('Failed to mark order as served:', e);
     } finally {
       setProcessing(false);
     }
   };
 
   const handleStartPreparing = () => {
+    if (isRestricted || !activeShift) {
+      handleRestrictedAction('updating kitchen orders');
+      return;
+    }
     setPrepTime(15); // reset default
     setShowPrepModal(true);
   };
 
   const handleConfirmPrep = async (minutes) => {
+    if (isRestricted || !activeShift) {
+      handleRestrictedAction('updating kitchen orders');
+      return;
+    }
     if (!selectedOrder) return;
     const time = parseInt(minutes) || 15;
     setProcessing(true);
@@ -234,13 +371,17 @@ export default function CashierDashboard() {
       setSelectedOrder(null);
       loadOrders();
     } catch (e) {
-      alert('Failed to start preparing: ' + (e.response?.data?.message || e.message));
+      console.error('Failed to start preparing:', e);
     } finally {
       setProcessing(false);
     }
   };
 
   const handleCompleteOrder = async () => {
+    if (isRestricted || !activeShift) {
+      handleRestrictedAction('completing orders');
+      return;
+    }
     if (!selectedOrder) return;
     setProcessing(true);
     try {
@@ -248,13 +389,17 @@ export default function CashierDashboard() {
       setSelectedOrder(null);
       loadOrders();
     } catch (e) {
-      alert('Failed to mark order as ready');
+      console.error('Failed to mark order as ready:', e);
     } finally {
       setProcessing(false);
     }
   };
 
   const handleDispatchOrder = async () => {
+    if (isRestricted || !activeShift) {
+      handleRestrictedAction('dispatching delivery orders');
+      return;
+    }
     if (!selectedOrder) return;
     setProcessing(true);
     try {
@@ -262,13 +407,17 @@ export default function CashierDashboard() {
       setSelectedOrder(null);
       loadOrders();
     } catch (e) {
-      alert('Failed to dispatch order');
+      console.error('Failed to dispatch order:', e);
     } finally {
       setProcessing(false);
     }
   };
 
   const handleCancel = () => {
+    if (isRestricted || !activeShift) {
+      handleRestrictedAction('managing or cancelling orders');
+      return;
+    }
     if (!selectedOrder) return;
     setCancelReason('Customer changed mind');
     setShowCancelModal(true);
@@ -432,11 +581,303 @@ export default function CashierDashboard() {
         </div>
       )}
 
+      {/* Time-In Modal */}
+      {showTimeInModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md animate-fade-in">
+          <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-scale-in border border-slate-100">
+            {timeInStep === 'prompt' ? (
+              <>
+                <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-8 text-white text-center relative overflow-hidden">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <Timer className="w-9 h-9 text-white" />
+                  </div>
+                  <h3 className="font-heading font-black text-2xl tracking-tight mb-1">Start Cashier Shift</h3>
+                  <p className="text-white/90 text-xs font-semibold">You are about to time in to begin your shift</p>
+                </div>
+
+                <div className="p-6 sm:p-8 space-y-4">
+                  <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 flex items-start gap-3">
+                    <Clock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-xs text-amber-900 leading-relaxed font-medium">
+                      Timing in records your attendance and opens the cash register drawer. If you choose <strong>Cancel</strong>, the dashboard will operate in <strong>Read-Only mode</strong> (order actions and payments remain restricted until you time in).
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={handleProceedToCashInput}
+                      className="w-full py-4 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-95 text-white font-black rounded-2xl shadow-xl shadow-orange-500/25 transition-all flex items-center justify-center gap-2 text-sm uppercase tracking-wider"
+                    >
+                      <Timer className="w-5 h-5" />
+                      <span>Time In</span>
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={handleCancelTimeIn}
+                      className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-600 font-bold rounded-2xl transition-all text-xs uppercase tracking-widest"
+                    >
+                      Cancel (Read-Only Mode)
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-7 text-white text-center relative overflow-hidden">
+                  <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+                    <Coins className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="font-heading font-black text-xl tracking-tight mb-1">Cash Register Float</h3>
+                  <p className="text-white/90 text-xs font-semibold">How much money is in the cash register?</p>
+                </div>
+
+                <form onSubmit={handleConfirmTimeIn} className="p-6 sm:p-8 space-y-5">
+                  <div>
+                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
+                      Starting Cash Amount (₱)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-black text-slate-400">₱</span>
+                      <input
+                        type="number"
+                        step="any"
+                        min="0"
+                        value={startingCash}
+                        onChange={(e) => setStartingCash(e.target.value)}
+                        placeholder="0.00"
+                        autoFocus
+                        required
+                        className="w-full pl-10 pr-4 py-4 bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 focus:bg-white rounded-2xl text-2xl font-black font-mono text-slate-900 transition-all outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                      Quick Select Starting Float
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[0, 500, 1000, 2000, 3000, 5000].map((amt) => (
+                        <button
+                          key={amt}
+                          type="button"
+                          onClick={() => setStartingCash(amt.toString())}
+                          className={`py-2.5 px-2 rounded-xl text-xs font-black border transition-all active:scale-95 ${
+                            startingCash === amt.toString()
+                              ? 'bg-emerald-600 border-emerald-600 text-white shadow-md'
+                              : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                          }`}
+                        >
+                          ₱{amt.toLocaleString()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 pt-2">
+                    <button
+                      type="submit"
+                      disabled={timeInLoading || startingCash === ''}
+                      className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 active:scale-95 text-white font-black rounded-2xl shadow-xl shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 text-sm uppercase tracking-wider"
+                    >
+                      {timeInLoading ? 'Recording Time In...' : 'Confirm & Start Shift'}
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => setTimeInStep('prompt')}
+                      disabled={timeInLoading}
+                      className="w-full py-3 text-slate-500 hover:text-slate-800 font-bold text-xs uppercase tracking-widest transition-all"
+                    >
+                      ← Back
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Shift Summary Modal */}
+      {shiftSummary && (
+        <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-100 animate-scale-in">
+            <div className="bg-emerald-600 p-6 text-white text-center">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <CheckCircle className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="font-black text-2xl tracking-tight">Shift Completed!</h3>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500 font-medium">Time In</span>
+                  <span className="font-bold text-slate-800">{formatDate(shiftSummary.startTime)}</span>
+                </div>
+                <div className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500 font-medium">Time Out</span>
+                  <span className="font-bold text-slate-800">{formatDate(shiftSummary.endTime)}</span>
+                </div>
+                <div className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500 font-medium">Starting Cash Float</span>
+                  <span className="font-bold text-slate-800">{formatCurrency(shiftSummary.startingCash)}</span>
+                </div>
+                <div className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500 font-medium">Shift Cash Sales</span>
+                  <span className="font-bold text-emerald-600">{formatCurrency(shiftSummary.cashSales)}</span>
+                </div>
+                <div className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500 font-medium">Shift Online (GCash/Maya)</span>
+                  <span className="font-bold text-blue-600">{formatCurrency(shiftSummary.onlineSales || 0)}</span>
+                </div>
+                <div className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500 font-medium">Total Shift Sales</span>
+                  <span className="font-black text-slate-900">{formatCurrency(shiftSummary.totalSales || 0)}</span>
+                </div>
+                <div className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500 font-medium">Expected Register Cash</span>
+                  <span className="font-bold text-slate-800">{formatCurrency(shiftSummary.expectedCash)}</span>
+                </div>
+                <div className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500 font-medium">Counted Ending Cash</span>
+                  <span className="font-bold text-slate-800">{formatCurrency(shiftSummary.endingCash)}</span>
+                </div>
+                <div className="flex justify-between pt-2">
+                  <span className="font-black text-slate-700">Cash Variance</span>
+                  <span className={`font-black ${shiftSummary.cashDifference >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    {shiftSummary.cashDifference >= 0 ? '+' : ''}{formatCurrency(shiftSummary.cashDifference)}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShiftSummary(null);
+                  setShowTimeInModal(true);
+                  setTimeInStep('prompt');
+                }}
+                className="w-full py-4 mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl shadow-lg transition-all"
+              >
+                Okay, Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Time-Out Modal */}
+      {showTimeOutModal && activeShift && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md animate-fade-in">
+          <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-scale-in border border-slate-100">
+            <div className="bg-gradient-to-br from-rose-600 to-pink-700 p-7 text-white text-center relative overflow-hidden">
+              <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+                <Timer className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="font-heading font-black text-xl tracking-tight mb-1">Time Out & End Shift</h3>
+              <p className="text-white/90 text-xs font-semibold">Count register and record ending cash drawer float</p>
+            </div>
+
+            <form onSubmit={handleConfirmTimeOut} className="p-6 sm:p-8 space-y-4">
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2 text-xs">
+                <div className="flex justify-between text-slate-600">
+                  <span>Shift Started:</span>
+                  <span className="font-bold text-slate-900">{formatDate(activeShift.startTime)}</span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>Opening Float:</span>
+                  <span className="font-bold font-mono text-slate-900">{formatCurrency(activeShift.startingCash)}</span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>Cash Sales (Shift):</span>
+                  <span className="font-bold font-mono text-emerald-600">+{formatCurrency(activeShift.liveStats?.cashSales || 0)}</span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>Online Sales (GCash/Maya):</span>
+                  <span className="font-bold font-mono text-blue-600">+{formatCurrency(activeShift.liveStats?.onlineSales || 0)}</span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>Total Sales (Shift):</span>
+                  <span className="font-bold font-mono text-slate-900">{formatCurrency(activeShift.liveStats?.totalSales || 0)}</span>
+                </div>
+                <div className="flex justify-between text-slate-800 pt-2 border-t border-slate-200 font-bold">
+                  <span>Expected Cash in Drawer:</span>
+                  <span className="font-mono text-primary-600 text-sm">{formatCurrency(activeShift.liveStats?.expectedCash || activeShift.startingCash)}</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">
+                  Counted Ending Cash in Register (₱)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-black text-slate-400">₱</span>
+                  <input
+                    type="number"
+                    step="any"
+                    min="0"
+                    value={endingCash}
+                    onChange={(e) => setEndingCash(e.target.value)}
+                    placeholder="0.00"
+                    autoFocus
+                    required
+                    className="w-full pl-10 pr-4 py-4 bg-slate-50 border-2 border-slate-200 focus:border-rose-500 focus:bg-white rounded-2xl text-2xl font-black font-mono text-slate-900 transition-all outline-none"
+                  />
+                </div>
+                {endingCash !== '' && !isNaN(parseFloat(endingCash)) && (
+                  <div className="mt-2 text-xs font-bold flex justify-between px-1">
+                    <span className="text-slate-500">Variance:</span>
+                    <span className={parseFloat(endingCash) - (activeShift.liveStats?.expectedCash || activeShift.startingCash) >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
+                      {parseFloat(endingCash) - (activeShift.liveStats?.expectedCash || activeShift.startingCash) >= 0 ? '+' : ''}
+                      {formatCurrency(parseFloat(endingCash) - (activeShift.liveStats?.expectedCash || activeShift.startingCash))}
+                      {parseFloat(endingCash) - (activeShift.liveStats?.expectedCash || activeShift.startingCash) === 0 ? ' (Exact)' : parseFloat(endingCash) - (activeShift.liveStats?.expectedCash || activeShift.startingCash) > 0 ? ' (Surplus)' : ' (Shortage)'}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5">
+                  Shift Notes (Optional)
+                </label>
+                <textarea
+                  value={timeOutNotes}
+                  onChange={(e) => setTimeOutNotes(e.target.value)}
+                  placeholder="e.g. Cash dropped to safe, reason for discrepancy..."
+                  rows={2}
+                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl resize-none focus:outline-none focus:border-rose-500"
+                />
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <button
+                  type="submit"
+                  disabled={timeOutLoading || endingCash === ''}
+                  className="w-full py-4 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 active:scale-95 text-white font-black rounded-2xl shadow-xl shadow-rose-600/25 transition-all flex items-center justify-center gap-2 text-sm uppercase tracking-wider"
+                >
+                  {timeOutLoading ? 'Closing Shift...' : 'Confirm Time Out & End Shift'}
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => setShowTimeOutModal(false)}
+                  disabled={timeOutLoading}
+                  className="w-full py-3 text-slate-500 hover:text-slate-800 font-bold text-xs uppercase tracking-widest transition-all"
+                >
+                  Cancel / Stay on Shift
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="bg-white border-b border-surface-200 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between flex-shrink-0 z-10 no-print">
         <div className="flex items-center gap-2 sm:gap-4 min-w-0">
           {user?.tenantLogo ? (
-            <img src={user.tenantLogo} className="w-8 h-8 rounded-lg object-contain shadow-sm" alt={user.tenantName} />
+            <img src={user.tenantLogo} className="w-8 h-8 rounded-lg object-cover shadow-sm" alt={user.tenantName} />
           ) : (
             <div className="w-8 h-8 bg-primary-50 rounded-lg flex items-center justify-center text-primary-500 shadow-inner"><Store className="w-4 h-4" /></div>
           )}
@@ -445,11 +886,62 @@ export default function CashierDashboard() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {activeShift ? (
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="font-bold text-emerald-800">Shift Active</span>
+              <span className="text-emerald-600 font-medium font-mono">Float: {formatCurrency(activeShift.startingCash)}</span>
+            </div>
+          ) : (
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold">
+              <Lock className="w-3 h-3" /> Not Timed In
+            </span>
+          )}
+
+          {activeShift ? (
+            <button
+              onClick={handleOpenTimeOut}
+              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 active:scale-95 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-sm"
+            >
+              <Timer className="w-4 h-4 text-rose-600" />
+              <span className="hidden xs:inline">End Shift /</span> Time Out
+            </button>
+          ) : (
+            <button
+              onClick={handleOpenTimeIn}
+              className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 active:scale-95 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-md shadow-orange-500/20"
+            >
+              <Timer className="w-4 h-4" />
+              Time In
+            </button>
+          )}
+
           <span className="text-xs sm:text-sm font-medium text-surface-600 hidden sm:flex sm:items-center sm:gap-1.5"><User className="w-4 h-4" /> {user?.name}</span>
-          <button onClick={logoutUser} className="text-surface-400 hover:text-red-500 text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5"><LogOut className="w-5 h-5" /></button>
+          <button onClick={logoutUser} title="Logout" className="text-surface-400 hover:text-red-500 text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5"><LogOut className="w-5 h-5" /></button>
         </div>
       </header>
+
+      {/* Restricted Mode Alert Banner */}
+      {isRestricted && (
+        <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white px-4 py-2.5 sm:py-3 flex flex-wrap items-center justify-between gap-3 shadow-md z-20 animate-fade-in no-print">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm flex-shrink-0">
+              <ShieldAlert className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="text-xs sm:text-sm font-black tracking-wide uppercase">Restricted Read-Only Mode</p>
+              <p className="text-[11px] sm:text-xs text-white/90 font-medium">You are not timed in. Order taking and cash register actions are locked until you time in.</p>
+            </div>
+          </div>
+          <button
+            onClick={handleOpenTimeIn}
+            className="px-4 py-2 bg-white text-orange-600 hover:bg-orange-50 active:scale-95 rounded-xl font-black text-xs uppercase tracking-wider shadow-sm transition-all flex items-center gap-1.5"
+          >
+            <Timer className="w-4 h-4" /> Time In Now
+          </button>
+        </div>
+      )}
 
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Left Panel: Order List */}
@@ -1138,6 +1630,58 @@ export default function CashierDashboard() {
                   Cancel
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Action Restricted Modal */}
+      {restrictionModal && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+          <div 
+            className="bg-slate-900 border border-slate-800 rounded-[2.5rem] w-full max-w-sm p-6 sm:p-8 shadow-2xl animate-scale-in text-center relative overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Ambient soft glow */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-rose-500/10 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none" />
+
+            {/* Lock Icon */}
+            <div className="w-16 h-16 bg-gradient-to-tr from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-500 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-xl shadow-amber-500/10 animate-pulse">
+              <Lock className="w-8 h-8" />
+            </div>
+
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-black uppercase tracking-widest mb-2">
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>Time In Required</span>
+            </div>
+
+            <h3 className="font-heading text-xl sm:text-2xl font-black text-white mb-2 tracking-tight">
+              Action Restricted
+            </h3>
+            <p className="text-slate-400 text-xs sm:text-sm font-medium leading-relaxed mb-6 px-2">
+              {restrictionModal.message || 'You must Time In to start your shift before processing payments and managing orders.'}
+            </p>
+
+            <div className="space-y-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setRestrictionModal(null);
+                  handleOpenTimeIn();
+                }}
+                className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 active:scale-95 text-white font-black rounded-2xl shadow-xl shadow-orange-500/20 transition-all flex items-center justify-center gap-2 text-sm uppercase tracking-wider"
+              >
+                <Timer className="w-4 h-4" />
+                <span>Time In Now</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setRestrictionModal(null)}
+                className="w-full py-3 bg-slate-800 hover:bg-slate-700/80 active:scale-95 text-slate-400 hover:text-slate-200 font-bold rounded-2xl transition-all text-xs uppercase tracking-wider"
+              >
+                Dismiss (Read-Only Mode)
+              </button>
             </div>
           </div>
         </div>

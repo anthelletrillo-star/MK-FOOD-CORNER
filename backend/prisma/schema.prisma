@@ -43,6 +43,8 @@ model Tenant {
   rawIngredients RawIngredient[]
   eventPackages EventPackage[]
   promoCodes    PromoCode[]
+  authorizedDevices AuthorizedDevice[]
+  cashierShifts CashierShift[]
 }
 
 model User {
@@ -67,6 +69,7 @@ model User {
   riderOrders Order[]    @relation("RiderOrders")
   payments  Payment[]
   auditLogs AuditLog[]
+  cashierShifts CashierShift[]
 
   @@unique([email, tenantId])
 }
@@ -420,3 +423,43 @@ model PromoCode {
   
   @@unique([tenantId, code])
 }
+
+model AuthorizedDevice {
+  id          Int      @id @default(autoincrement())
+  tenantId    Int
+  deviceToken String   @unique
+  deviceName  String   // e.g. "Main Counter POS", "Kitchen Tablet"
+  isActive    Boolean  @default(true)
+  addedById   Int?     // Admin who authorized this device
+  lastUsedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+model CashierShift {
+  id             Int       @id @default(autoincrement())
+  tenantId       Int       @default(1)
+  userId         Int
+  cashierName    String
+  role           String    @default("cashier") // cashier, kitchen, rider, admin
+  startTime      DateTime  @default(now())
+  endTime        DateTime?
+  startingCash   Float     @default(0)
+  endingCash     Float?
+  expectedCash   Float?
+  cashSales      Float?    @default(0)
+  onlineSales    Float?    @default(0)
+  totalSales     Float?    @default(0)
+  orderCount     Int?      @default(0)
+  cashDifference Float?    @default(0)
+  notes          String?
+  status         String    @default("active") // active, closed
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  tenant         Tenant    @relation(fields: [tenantId], references: [id])
+  user           User      @relation(fields: [userId], references: [id])
+}
+

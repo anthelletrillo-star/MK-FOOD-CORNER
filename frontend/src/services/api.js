@@ -39,7 +39,10 @@ api.interceptors.request.use(config => {
 });
 
 // Auth
-export const login = (data) => api.post('/auth/login', data);
+export const login = (data) => api.post('/auth/login', {
+  ...data,
+  deviceToken: localStorage.getItem('pos_device_token') || undefined
+});
 export const googleLogin = (data) => api.post('/auth/google', data);
 export const register = (data) => api.post('/auth/register', data);
 export const registerCustomer = (data) => api.post('/auth/register-customer', data);
@@ -52,6 +55,12 @@ export const checkOTP = (data) => api.post('/auth/check-otp', data);
 export const resetPassword = (data) => api.post('/auth/reset-password', data);
 export const verifyRegistration = (data) => api.post('/auth/verify-registration', data);
 export const resendRegistrationOTP = (data) => api.post('/auth/resend-registration-otp', data);
+
+// Device Management (Admin)
+export const registerDevice = (data) => api.post('/auth/devices/register', data);
+export const getDevices = () => api.get('/auth/devices');
+export const revokeDevice = (id) => api.post(`/auth/devices/${id}/revoke`);
+export const deleteDevice = (id) => api.delete(`/auth/devices/${id}`);
 
 // Products (Public)
 export const getProducts = () => api.get('/products');
@@ -81,6 +90,10 @@ export const updateOrderStatus = (id, status) => {
   }
   return api.post(`/cashier/orders/${id}/status`, { status });
 };
+export const getCashierActiveShift = () => api.get('/cashier/shift/current');
+export const cashierTimeIn = (data) => api.post('/cashier/shift/time-in', data);
+export const cashierTimeOut = (data) => api.post('/cashier/shift/time-out', data);
+export const getCashierShiftHistory = () => api.get('/cashier/shift/history');
 
 // Kitchen
 export const getKitchenOrders = () => api.get('/kitchen/orders');
@@ -132,6 +145,7 @@ export const getAdminSummary = () => api.get('/reports/summary');
 export const getKitchenTimes = () => api.get('/reports/kitchen-times');
 export const getForecasting = () => api.get('/reports/forecasting');
 export const getSalesByDate = (date) => api.get(`/reports/sales-by-date?date=${date}`);
+export const getAdminShifts = (params) => api.get('/admin/shifts', { params });
 
 // Suppliers
 export const getSuppliers = () => api.get('/suppliers');
