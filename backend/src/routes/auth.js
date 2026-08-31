@@ -819,29 +819,36 @@ router.post('/devices/register', authenticate, authorize('admin'), async (req, r
       return res.status(400).json({ success: false, message: 'Device name is required (e.g. "Main Counter POS").' });
     }
 
+    const tenantId = req.tenantId || req.user?.tenantId || 1;
+
     // Generate a cryptographically secure token
-    const deviceToken = `dev_${crypto.randomUUID()}`;
+    const uniqueId = crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex');
+    const deviceToken = `dev_${uniqueId}`;
 
     const device = await prisma.authorizedDevice.create({
       data: {
-        tenantId: req.tenantId,
+        tenantId,
         deviceToken,
         deviceName: deviceName.trim(),
-        addedById: req.user.id
+        addedById: req.user?.id || null
       }
     });
 
     // Audit log
-    await prisma.auditLog.create({
-      data: {
-        tenantId: req.tenantId,
-        userId: req.user.id,
-        action: 'register_device',
-        entityType: 'device',
-        entityId: device.id.toString(),
-        details: `Authorized device: ${deviceName.trim()}`
-      }
-    });
+    try {
+      await prisma.auditLog.create({
+        data: {
+          tenantId,
+          userId: req.user?.id || null,
+          action: 'register_device',
+          entityType: 'device',
+          entityId: device.id.toString(),
+          details: `Authorized device: ${deviceName.trim()}`
+        }
+      });
+    } catch (auditErr) {
+      console.warn('Device registration audit log warning:', auditErr.message);
+    }
 
     res.status(201).json({
       success: true,
@@ -854,15 +861,19 @@ router.post('/devices/register', authenticate, authorize('admin'), async (req, r
     });
   } catch (error) {
     console.error('Device registration error:', error && error.stack ? error.stack : error);
-    res.status(500).json({ success: false, message: 'Failed to register device.' });
+    res.status(500).json({ 
+      success: false, 
+      message: error?.message || 'Failed to register device.' 
+    });
   }
 });
 
 // GET /api/auth/devices — List all authorized devices for this tenant (Admin only)
 router.get('/devices', authenticate, authorize('admin'), async (req, res) => {
   try {
+    const tenantId = req.tenantId || req.user?.tenantId || 1;
     const devices = await prisma.authorizedDevice.findMany({
-      where: { tenantId: req.tenantId },
+      where: { tenantId },
       orderBy: { createdAt: 'desc' }
     });
 
@@ -889,16 +900,17 @@ router.get('/devices', authenticate, authorize('admin'), async (req, res) => {
     });
   } catch (error) {
     console.error('List devices error:', error && error.stack ? error.stack : error);
-    res.status(500).json({ success: false, message: 'Failed to fetch devices.' });
+    res.status(500).json({ success: false, message: error?.message || 'Failed to fetch devices.' });
   }
 });
 
 // POST /api/auth/devices/:id/revoke — Deactivate a device (Admin only)
 router.post('/devices/:id/revoke', authenticate, authorize('admin'), async (req, res) => {
   try {
+    const tenantId = req.tenantId || req.user?.tenantId || 1;
     const deviceId = parseInt(req.params.id);
     const device = await prisma.authorizedDevice.findFirst({
-      where: { id: deviceId, tenantId: req.tenantId }
+      where: { id: deviceId, tenantId }
     });
 
     if (!device) {
