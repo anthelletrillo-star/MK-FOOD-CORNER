@@ -20,6 +20,13 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    const token = localStorage.getItem('pos_token');
+    if (!token) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
     getMe()
       .then(res => {
         if (res.data && res.data.success) {
@@ -33,16 +40,19 @@ export function AuthProvider({ children }) {
           if (currentTenantSlug !== userTenantSlug && userData.role === 'customer') {
             console.warn(`Tenant mismatch. User belongs to ${userTenantSlug}, but visited ${currentTenantSlug}. Logging out.`);
             logoutRequest();
+            localStorage.removeItem('pos_token');
             localStorage.removeItem('tenant_id');
             setUser(null);
           } else {
             setUser(userData);
           }
         } else {
+          localStorage.removeItem('pos_token');
           localStorage.removeItem('tenant_id');
         }
       })
       .catch(() => { 
+        localStorage.removeItem('pos_token');
         localStorage.removeItem('tenant_id');
         setUser(null);
       })
