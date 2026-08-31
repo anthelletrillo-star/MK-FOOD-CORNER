@@ -853,7 +853,7 @@ router.post('/devices/register', authenticate, authorize('admin'), async (req, r
       }
     });
   } catch (error) {
-    console.error('Device registration error:', error);
+    console.error('Device registration error:', error && error.stack ? error.stack : error);
     res.status(500).json({ success: false, message: 'Failed to register device.' });
   }
 });
@@ -888,7 +888,7 @@ router.get('/devices', authenticate, authorize('admin'), async (req, res) => {
       }))
     });
   } catch (error) {
-    console.error('List devices error:', error);
+    console.error('List devices error:', error && error.stack ? error.stack : error);
     res.status(500).json({ success: false, message: 'Failed to fetch devices.' });
   }
 });
@@ -927,7 +927,7 @@ router.post('/devices/:id/revoke', authenticate, authorize('admin'), async (req,
       message: device.isActive ? 'Device revoked successfully.' : 'Device reactivated successfully.'
     });
   } catch (error) {
-    console.error('Revoke device error:', error);
+    console.error('Revoke device error:', error && error.stack ? error.stack : error);
     res.status(500).json({ success: false, message: 'Failed to update device.' });
   }
 });
@@ -959,7 +959,7 @@ router.delete('/devices/:id', authenticate, authorize('admin'), async (req, res)
 
     res.json({ success: true, message: 'Device deleted permanently.' });
   } catch (error) {
-    console.error('Delete device error:', error);
+    console.error('Delete device error:', error && error.stack ? error.stack : error);
     res.status(500).json({ success: false, message: 'Failed to delete device.' });
   }
 });

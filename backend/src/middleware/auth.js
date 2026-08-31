@@ -48,11 +48,28 @@ const authenticate = async (req, res, next) => {
     
     // TENANT RESOLUTION FOR SUPERADMIN
     if (user.role === 'superadmin') {
-      let resolvedTenantId = parseInt(headerTenantId) || user.tenantId;
+      let resolvedTenantId = null;
+
+      // Prefer an explicit header if it's a valid integer
+      if (headerTenantId) {
+        const parsed = parseInt(headerTenantId);
+        if (!Number.isNaN(parsed)) {
+          // Ensure the tenant actually exists
+          const tenantRecord = await prisma.tenant.findUnique({ where: { id: parsed } });
+          if (tenantRecord) resolvedTenantId = parsed;
+        }
+      }
+
+      // Next prefer the superadmin's own tenantId (if set), else pick the first active tenant
+      if (!resolvedTenantId) {
+        resolvedTenantId = user.tenantId || null;
+      }
+
       if (!resolvedTenantId) {
         const firstActiveTenant = await prisma.tenant.findFirst({ where: { active: true } });
         resolvedTenantId = firstActiveTenant ? firstActiveTenant.id : null;
       }
+
       req.tenantId = resolvedTenantId;
     } else {
       req.tenantId = user.tenantId;
